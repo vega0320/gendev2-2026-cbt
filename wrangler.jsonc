@@ -1,13 +1,13 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "gendev2-2026-cbt",
-  "pages_build_output_dir": "site",
-  "compatibility_date": "2026-08-03",
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "gendev2-discussions",
-      "database_id": "REPLACE_AFTER_CREATE"
-    }
-  ]
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "gendev2-2026-cbt",
+	"pages_build_output_dir": "site",
+	"compatibility_date": "2026-08-03",
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "gendev2-discussions",
+			"database_id": "1c0c04c5-714f-47aa-ae31-c4a880e54513"
+		}
+	]
 }
