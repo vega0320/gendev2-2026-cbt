@@ -10,6 +10,18 @@ const chromePath = process.env.CHROME_PATH || "C:\\Program Files\\Google\\Chrome
     await page.goto(base, { waitUntil: "networkidle" });
     await page.fill("#attendance", "27");
     await page.click('#login-form button[type="submit"]');
+    const sidebarWidth = await page.locator(".sidebar").evaluate(node => node.getBoundingClientRect().width);
+    await page.click("#toggle-sidebar");
+    await page.waitForTimeout(300);
+    const collapsedWidth = await page.locator(".sidebar").evaluate(node => node.getBoundingClientRect().width);
+    if (!(sidebarWidth > 200 && collapsedWidth < 100)) throw new Error("데스크톱 강의 탭 접기 실패");
+    await page.reload({ waitUntil: "networkidle" });
+    await page.fill("#attendance", "27");
+    await page.click('#login-form button[type="submit"]');
+    await page.waitForTimeout(300);
+    const persistedWidth = await page.locator(".sidebar").evaluate(node => node.getBoundingClientRect().width);
+    if (persistedWidth >= 100) throw new Error("강의 탭 접힘 상태 저장 실패");
+    await page.click("#toggle-sidebar");
     await page.click('[data-lecture="03"]');
 
     await page.click("[data-unknown-toggle]");
@@ -42,7 +54,7 @@ const chromePath = process.env.CHROME_PATH || "C:\\Program Files\\Google\\Chrome
 
     await page.setViewportSize({ width: 390, height: 844 });
     await page.screenshot({ path: "work/mobile-review-empty.png", fullPage: true });
-    console.log("REVIEW_BROWSER_PASS wrong=pass unknown=pass concepts=pass retry=pass isolation=pass mobile=pass");
+    console.log("REVIEW_BROWSER_PASS wrong=pass unknown=pass concepts=pass retry=pass isolation=pass sidebar=pass mobile=pass");
   } finally {
     await browser.close();
   }

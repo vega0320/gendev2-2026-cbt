@@ -1,4 +1,10 @@
 .mode-tabs{display:flex;gap:8px;margin-bottom:14px;padding:6px;background:#e7edf5;border-radius:15px;overflow-x:auto}
+.layout{transition:grid-template-columns .2s ease}
+.layout.sidebar-collapsed{grid-template-columns:82px minmax(0,1fr)}
+.sidebar.collapsed{padding-left:10px;padding-right:10px}
+.sidebar.collapsed .sidebar-title{justify-content:center}
+.sidebar.collapsed .sidebar-title h2,.sidebar.collapsed .lecture-list{display:none}
+.sidebar.collapsed #toggle-sidebar{padding:10px 7px;font-size:.82rem}
 .mode-tab{display:flex;align-items:center;gap:7px;padding:10px 16px;border:0;border-radius:11px;background:transparent;color:#46556b;font-weight:900;white-space:nowrap}
 .mode-tab.active{background:#fff;color:var(--navy);box-shadow:0 3px 10px #17345a14}
 .mode-tab span{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 6px;border-radius:999px;background:#d9e2ef;font-size:.78rem}
