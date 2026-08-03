@@ -42,6 +42,8 @@ def main() -> None:
             fail(f"{qid}: 정답 누락/범위 오류", errors)
         if not q.get("lectureNumber") or not q.get("lectureTitle"):
             fail(f"{qid}: 강의 분류 누락", errors)
+        if not q.get("keyConcepts") or any(not concept.strip() for concept in q.get("keyConcepts", [])):
+            fail(f"{qid}: 복습 개념 누락", errors)
         for asset in q.get("assets", []):
             asset_path = SITE / asset if asset.startswith("assets/") else SITE / "assets" / "questions" / asset
             if not asset_path.is_file():
@@ -54,7 +56,7 @@ def main() -> None:
             fail(f"{qid}: 시험판 선지별 해설 누락", errors)
     html = (SITE / "index.html").read_text(encoding="utf-8")
     html_ids = set(re.findall(r'id="([^"]+)"', html))
-    required_ids = {"login", "attendance", "lecture-list", "question-card", "discussion-list"}
+    required_ids = {"login", "attendance", "lecture-list", "question-card", "discussion-list", "review-view", "review-list", "concept-view", "concept-list"}
     missing_ids = sorted(required_ids - html_ids)
     if missing_ids:
         fail(f"HTML 필수 대상 누락: {missing_ids}", errors)

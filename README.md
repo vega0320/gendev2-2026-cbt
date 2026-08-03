@@ -6,6 +6,8 @@
 
 - 출석번호별로 브라우저 풀이 기록 분리
 - 강의별 문제 선택, 다시 풀기, 누적 시도·오답 횟수
+- 마지막 오답과 직접 표시한 모름 문항을 모아 다시 풀기
+- 현재 오답·모름 문항에서 복습 개념을 자동 추출해 묶어 보기
 - 문제·선지는 CBT 형식으로 표시하고 표·사진은 원본 이미지로 연결
 - 답 제출 뒤 각 선지 바로 아래에 해당 선지 해설 표시
 - 생성발2 및 기존 임추·국시 문제은행의 비슷한 문제 연결
@@ -22,6 +24,7 @@ node --check site/app.js
 node --check functions/api/discussions.js
 node scripts/discussion_smoke.mjs
 node scripts/browser_smoke.cjs
+node scripts/review_smoke.cjs
 ```
 
 ## 자료 및 근거

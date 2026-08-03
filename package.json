@@ -3,9 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check:js": "node --check site/app.js && node --check functions/api/discussions.js && node --check scripts/browser_smoke.cjs && node --check scripts/discussion_smoke.mjs",
+    "check:js": "node --check site/app.js && node --check functions/api/discussions.js && node --check scripts/browser_smoke.cjs && node --check scripts/review_smoke.cjs && node --check scripts/discussion_smoke.mjs",
     "test:api": "node scripts/discussion_smoke.mjs",
-    "test:browser": "node scripts/browser_smoke.cjs"
+    "test:browser": "node scripts/browser_smoke.cjs && node scripts/review_smoke.cjs"
   },
   "devDependencies": {
     "playwright": "^1.58.0",

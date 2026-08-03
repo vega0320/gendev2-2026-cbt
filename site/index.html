@@ -7,6 +7,7 @@
   <title>2026 생성발2 CBT</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="related.css">
+  <link rel="stylesheet" href="review.css">
 </head>
 <body>
   <div id="login" class="login-shell">
@@ -46,7 +47,13 @@
       </aside>
 
       <main class="workspace">
-        <section class="progress-card" aria-label="현재 풀이 현황">
+        <nav class="mode-tabs" aria-label="학습 화면 선택">
+          <button class="mode-tab active" data-mode="solve">문제 풀기</button>
+          <button class="mode-tab" data-mode="review">오답·모름 <span id="review-count">0</span></button>
+          <button class="mode-tab" data-mode="concepts">개념 정리</button>
+        </nav>
+
+        <section class="progress-card solve-only" aria-label="현재 풀이 현황">
           <div><span>범위</span><strong id="progress-scope">-</strong></div>
           <div><span>문항</span><strong id="progress-total">0</strong></div>
           <div><span>풀이 횟수</span><strong id="progress-attempts">0</strong></div>
@@ -54,22 +61,22 @@
           <button id="redo-lecture" class="secondary">이 강의 다시 풀기</button>
         </section>
 
-        <nav class="question-nav" aria-label="문항 이동">
+        <nav class="question-nav solve-only" aria-label="문항 이동">
           <button id="prev-question" class="quiet">← 이전</button>
           <div id="question-dots" class="question-dots"></div>
           <button id="next-question" class="quiet">다음 →</button>
         </nav>
 
-        <article id="question-card" class="question-card" aria-live="polite"></article>
+        <article id="question-card" class="question-card solve-only" aria-live="polite"></article>
 
-        <section class="related-section" aria-labelledby="related-title">
+        <section class="related-section solve-only" aria-labelledby="related-title">
           <div class="section-heading">
             <div><p class="eyebrow">같은 개념을 이어서</p><h2 id="related-title">비슷한 유형 풀기</h2></div>
           </div>
           <div id="related-list" class="related-list"></div>
         </section>
 
-        <section class="discussion-section" aria-labelledby="discussion-title">
+        <section class="discussion-section solve-only" aria-labelledby="discussion-title">
           <div class="section-heading">
             <div><p class="eyebrow">모두에게 실시간 공개</p><h2 id="discussion-title">문항 오류토의</h2></div>
             <span id="discussion-status" class="status-pill">연결 확인 중</span>
@@ -80,6 +87,23 @@
             <textarea id="discussion-input" maxlength="800" placeholder="정답 오류, 선지 누락, 강의 오분류 근거를 적어주세요."></textarea>
             <button class="secondary" type="submit">의견 올리기</button>
           </form>
+        </section>
+
+        <section id="review-view" class="review-view" hidden aria-labelledby="review-title">
+          <div class="review-hero">
+            <div><p class="eyebrow">현재 출석번호에만 저장</p><h2 id="review-title">오답·모름 다시 확인</h2></div>
+            <div class="review-totals"><span>복습할 문제 <strong id="review-total">0</strong></span><span>관련 개념 <strong id="review-concept-total">0</strong></span></div>
+          </div>
+          <p class="review-help">마지막 채점에서 틀렸거나 직접 ‘모름’으로 표시한 문제입니다. 다시 풀어 맞히면 오답에서는 빠지고, 모름 표시는 직접 해제할 수 있습니다.</p>
+          <div id="review-list" class="review-list"></div>
+        </section>
+
+        <section id="concept-view" class="concept-view" hidden aria-labelledby="concept-title">
+          <div class="review-hero">
+            <div><p class="eyebrow">오답·모름에서 자동 추출</p><h2 id="concept-title">다시 봐야 할 개념</h2></div>
+          </div>
+          <p class="review-help">현재 복습 대상이 바뀔 때마다 개념과 연결 문항도 즉시 다시 계산됩니다.</p>
+          <div id="concept-list" class="concept-list"></div>
         </section>
       </main>
     </div>

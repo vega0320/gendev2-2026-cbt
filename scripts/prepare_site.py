@@ -80,6 +80,49 @@ PILOT_EXPLANATIONS = {
     },
 }
 
+
+CONCEPT_KEYWORDS = (
+    (("cfDNA", "NIPT", "태아 DNA", "삼염색체", "다운증후군"), "산전 염색체 선별·진단"),
+    (("양수지수", "양수과소", "양수과다"), "양수량 평가"),
+    (("탯줄동맥", "도플러", "태아성장제한", "예상태아체중"), "태아성장제한 감시"),
+    (("비수축검사", "NST", "태동"), "태아 안녕평가"),
+    (("자간전증", "전자간증", "고혈압", "단백뇨"), "임신성 고혈압질환"),
+    (("조산", "자궁수축", "자궁경부길이"), "조산의 진단과 처치"),
+    (("전치태반", "태반조기박리", "산후출혈"), "산과 출혈"),
+    (("자궁외임신", "이소성 임신"), "자궁외임신"),
+    (("임신성 당뇨", "당부하", "인슐린"), "임신 중 당 대사"),
+    (("철", "헤모글로빈", "빈혈"), "임신 중 철·빈혈"),
+    (("갑상샘", "갑상선", "TSH", "hCG"), "임신 중 갑상샘"),
+    (("폐경", "골다공증", "호르몬 대체"), "폐경과 호르몬 치료"),
+    (("자궁경부암", "HPV", "CIN"), "자궁경부 병변"),
+    (("자궁내막암", "내막증식"), "자궁내막 병변"),
+    (("난소암", "난소종괴", "CA-125"), "난소 종양"),
+    (("유방암", "유방종괴", "BI-RADS"), "유방 질환"),
+    (("무월경", "다낭성난소", "PCOS"), "무월경·배란장애"),
+    (("불임", "난임", "배란유도", "정액검사"), "난임 평가와 치료"),
+    (("피임", "경구피임약", "자궁내장치"), "피임"),
+    (("골반염", "PID", "질염", "성매개"), "여성생식기 감염"),
+    (("요실금", "골반장기탈출"), "비뇨부인과"),
+    (("사춘기", "성조숙증", "성분화"), "성발달"),
+)
+
+
+def derive_key_concepts(question: dict) -> list[str]:
+    concepts: list[str] = []
+    explanation = question.get("explanation") or {}
+    if explanation.get("conceptGroup"):
+        concepts.append(explanation["conceptGroup"])
+    searchable = " ".join([
+        str(question.get("stem", "")),
+        " ".join(str(choice) for choice in question.get("choices", [])),
+    ]).lower()
+    for keywords, label in CONCEPT_KEYWORDS:
+        if any(keyword.lower() in searchable for keyword in keywords):
+            concepts.append(label)
+    lecture = str(question.get("lectureTitle") or "핵심 개념 복습").strip()
+    concepts.append(lecture)
+    return list(dict.fromkeys(concepts))[:3]
+
 PILOT_EXPLANATIONS.update({
     "gendev2-01-2023-q075": {
         "conceptGroup": "임신 중 호흡·당 대사",
@@ -159,6 +202,7 @@ def main() -> None:
                 other for other in PILOT_EXPLANATIONS if other != question["id"]
                 and PILOT_EXPLANATIONS[other]["conceptGroup"] == question["explanation"]["conceptGroup"]
             ]
+        question["keyConcepts"] = derive_key_concepts(question)
     if args.pilot:
         allowed = set(PILOT_EXPLANATIONS)
         payload["questions"] = [q for q in payload["questions"] if q["id"] in allowed]
