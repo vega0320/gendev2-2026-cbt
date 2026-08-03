@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#183153">
+  <title>2026 생성발2 CBT</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="related.css">
+</head>
+<body>
+  <div id="login" class="login-shell">
+    <main class="login-card" aria-labelledby="login-title">
+      <p class="eyebrow">2026 본과 2학년</p>
+      <h1 id="login-title">생식·발생 2 CBT</h1>
+      <p>출석번호마다 풀이 기록이 따로 저장됩니다. 오류토의만 모든 참여자에게 보입니다.</p>
+      <form id="login-form">
+        <label for="attendance">출석번호</label>
+        <input id="attendance" inputmode="numeric" pattern="[0-9]{1,4}" maxlength="4" autocomplete="off" placeholder="예: 17" required>
+        <p id="login-error" class="form-error" role="alert"></p>
+        <button class="primary" type="submit">내 문제풀이 시작</button>
+      </form>
+      <small>같은 기기에서도 다른 번호를 입력하면 기록이 섞이지 않습니다.</small>
+    </main>
+  </div>
+
+  <div id="app" class="app-shell" hidden>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">2026 생성발2</p>
+        <h1>강의별 CBT</h1>
+      </div>
+      <div class="top-actions">
+        <span id="user-badge" class="user-badge"></span>
+        <button id="switch-user" class="quiet">번호 바꾸기</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar" aria-label="강의 선택">
+        <div class="sidebar-title">
+          <h2>강의</h2>
+          <button id="toggle-sidebar" class="quiet mobile-only" aria-expanded="true">접기</button>
+        </div>
+        <div id="lecture-list" class="lecture-list"></div>
+      </aside>
+
+      <main class="workspace">
+        <section class="progress-card" aria-label="현재 풀이 현황">
+          <div><span>범위</span><strong id="progress-scope">-</strong></div>
+          <div><span>문항</span><strong id="progress-total">0</strong></div>
+          <div><span>풀이 횟수</span><strong id="progress-attempts">0</strong></div>
+          <div><span>틀린 횟수</span><strong id="progress-wrong">0</strong></div>
+          <button id="redo-lecture" class="secondary">이 강의 다시 풀기</button>
+        </section>
+
+        <nav class="question-nav" aria-label="문항 이동">
+          <button id="prev-question" class="quiet">← 이전</button>
+          <div id="question-dots" class="question-dots"></div>
+          <button id="next-question" class="quiet">다음 →</button>
+        </nav>
+
+        <article id="question-card" class="question-card" aria-live="polite"></article>
+
+        <section class="related-section" aria-labelledby="related-title">
+          <div class="section-heading">
+            <div><p class="eyebrow">같은 개념을 이어서</p><h2 id="related-title">비슷한 유형 풀기</h2></div>
+          </div>
+          <div id="related-list" class="related-list"></div>
+        </section>
+
+        <section class="discussion-section" aria-labelledby="discussion-title">
+          <div class="section-heading">
+            <div><p class="eyebrow">모두에게 실시간 공개</p><h2 id="discussion-title">문항 오류토의</h2></div>
+            <span id="discussion-status" class="status-pill">연결 확인 중</span>
+          </div>
+          <div id="discussion-list" class="discussion-list" aria-live="polite"></div>
+          <form id="discussion-form" class="discussion-form">
+            <label class="sr-only" for="discussion-input">오류 의견</label>
+            <textarea id="discussion-input" maxlength="800" placeholder="정답 오류, 선지 누락, 강의 오분류 근거를 적어주세요."></textarea>
+            <button class="secondary" type="submit">의견 올리기</button>
+          </form>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <dialog id="image-dialog"><button id="close-image" aria-label="닫기">×</button><img id="dialog-image" alt="확대 이미지"></dialog>
+  <dialog id="related-dialog" class="related-dialog">
+    <button id="close-related" class="dialog-close" aria-label="비슷한 문제 닫기">×</button>
+    <div id="related-question"></div>
+  </dialog>
+  <script src="app.js" defer></script>
+</body>
+</html>

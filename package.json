@@ -1,0 +1,14 @@
+{
+  "name": "gendev2-2026-cbt",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check:js": "node --check site/app.js && node --check functions/api/discussions.js && node --check scripts/browser_smoke.cjs && node --check scripts/discussion_smoke.mjs",
+    "test:api": "node scripts/discussion_smoke.mjs",
+    "test:browser": "node scripts/browser_smoke.cjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.58.0",
+    "wrangler": "^4.92.0"
+  }
+}
