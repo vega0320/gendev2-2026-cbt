@@ -31,7 +31,7 @@
     document.querySelectorAll("[data-mode]").forEach(button=>button.addEventListener("click",()=>setMode(button.dataset.mode)));
     applySidebar(localStorage.getItem("gendev2:sidebar-collapsed:v1")==="1");
   }
-  async function login(event){ event.preventDefault(); const value=el("attendance").value.trim(); if(!/^\d{1,4}$/.test(value)){el("login-error").textContent="숫자 1~4자리로 입력해주세요.";return;} state.attendance=String(Number(value)); loadStore(); el("user-badge").textContent=`출석 ${state.attendance}번`; await pullProgress(); el("login").hidden=true; el("app").hidden=false; renderLectures(); setMode("solve"); }
+  async function login(event){event.preventDefault();const value=el("attendance").value.trim();if(!/^\d{1,4}$/.test(value)){el("login-error").textContent="숫자 1~4자리로 입력해주세요.";return;}const attendance=String(Number(value));state.attendance=attendance;loadStore();el("user-badge").textContent=`출석 ${state.attendance}번`;el("login").hidden=true;el("app").hidden=false;renderLectures();setMode("solve");await pullProgress();if(state.attendance===attendance)setMode(state.mode);}
   function switchUser(){ clearInterval(state.poll);clearTimeout(state.syncTimer);state.syncTimer=null;state.attendance=null;state.store=null;el("app").hidden=true;el("login").hidden=false;el("attendance").value="";el("attendance").focus(); }
   function renderLectures(){
     const counts=Object.fromEntries(state.data.lectures.map(l=>[l.number,state.data.questions.filter(q=>q.lectureNumber===l.number).length]));

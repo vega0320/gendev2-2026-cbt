@@ -14,7 +14,7 @@ const chromePath = process.env.CHROME_PATH || "C:\\Program Files\\Google\\Chrome
     await page.click("#toggle-sidebar");
     await page.waitForTimeout(300);
     const collapsedWidth = await page.locator(".sidebar").evaluate(node => node.getBoundingClientRect().width);
-    if (!(sidebarWidth > 200 && collapsedWidth < 100)) throw new Error("데스크톱 강의 탭 접기 실패");
+    if (!(sidebarWidth > 200 && collapsedWidth < 100)) throw new Error(`데스크톱 강의 탭 접기 실패: before=${sidebarWidth}, after=${collapsedWidth}, class=${await page.locator(".layout").getAttribute("class")}`);
     await page.reload({ waitUntil: "networkidle" });
     await page.fill("#attendance", "27");
     await page.click('#login-form button[type="submit"]');

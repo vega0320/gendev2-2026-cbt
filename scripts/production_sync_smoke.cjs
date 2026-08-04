@@ -10,6 +10,7 @@ async function login(page, attendance) {
   await page.fill("#attendance", attendance);
   await page.click('#login-form button[type="submit"]');
   await page.waitForSelector("#app:not([hidden])");
+  await page.waitForFunction(() => ["기기 간 동기화됨", "이 기기에 저장됨"].includes(document.querySelector("#sync-status")?.textContent));
 }
 
 (async () => {
