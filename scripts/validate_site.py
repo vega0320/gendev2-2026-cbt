@@ -54,16 +54,16 @@ def main() -> None:
         exp = q.get("explanation")
         if args.pilot and (not exp or len(exp.get("choiceExplanations", [])) != 5):
             fail(f"{qid}: 시험판 선지별 해설 누락", errors)
-        if q.get("lectureNumber") in {"01", "02", "03", "04"}:
+        if q.get("lectureNumber") in {"01", "02", "03", "04", "05"}:
             if not exp or not exp.get("keyJudgment") or not exp.get("reasoningSteps") or not exp.get("conceptReview"):
-                fail(f"{qid}: 1~4강 상세 해설 누락", errors)
+                fail(f"{qid}: 1~5강 상세 해설 누락", errors)
             if q.get("questionMode") != "self-check" and len((exp or {}).get("choiceExplanations", [])) != 5:
-                fail(f"{qid}: 1~4강 선지별 해설 5개 누락", errors)
+                fail(f"{qid}: 1~5강 선지별 해설 5개 누락", errors)
             if not (exp or {}).get("sources"):
-                fail(f"{qid}: 1~4강 해설 출처 누락", errors)
+                fail(f"{qid}: 1~5강 해설 출처 누락", errors)
     html = (SITE / "index.html").read_text(encoding="utf-8")
     html_ids = set(re.findall(r'id="([^"]+)"', html))
-    required_ids = {"login", "attendance", "lecture-list", "question-card", "discussion-list", "review-view", "review-list", "concept-view", "concept-list"}
+    required_ids = {"login", "attendance", "lecture-list", "question-card", "discussion-list", "review-view", "review-list", "concept-view", "concept-list", "sync-status", "progress-view", "progress-summary", "progress-list"}
     missing_ids = sorted(required_ids - html_ids)
     if missing_ids:
         fail(f"HTML 필수 대상 누락: {missing_ids}", errors)

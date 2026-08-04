@@ -8,20 +8,21 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="related.css">
   <link rel="stylesheet" href="review.css">
+  <link rel="stylesheet" href="progress.css">
 </head>
 <body>
   <div id="login" class="login-shell">
     <main class="login-card" aria-labelledby="login-title">
       <p class="eyebrow">2026 본과 2학년</p>
       <h1 id="login-title">생식·발생 2 CBT</h1>
-      <p>출석번호마다 풀이 기록이 따로 저장됩니다. 오류토의만 모든 참여자에게 보입니다.</p>
+      <p>출석번호마다 풀이 기록이 분리되며, 같은 번호를 쓰면 휴대폰과 컴퓨터 기록이 자동으로 합쳐집니다. 오류토의만 모든 참여자에게 보입니다.</p>
       <form id="login-form">
         <label for="attendance">출석번호</label>
         <input id="attendance" inputmode="numeric" pattern="[0-9]{1,4}" maxlength="4" autocomplete="off" placeholder="예: 17" required>
         <p id="login-error" class="form-error" role="alert"></p>
         <button class="primary" type="submit">내 문제풀이 시작</button>
       </form>
-      <small>같은 기기에서도 다른 번호를 입력하면 기록이 섞이지 않습니다.</small>
+      <small>출석번호는 비밀번호가 아닙니다. 같은 번호를 아는 사람은 같은 풀이 기록을 볼 수 있습니다.</small>
     </main>
   </div>
 
@@ -32,6 +33,7 @@
         <h1>강의별 CBT</h1>
       </div>
       <div class="top-actions">
+        <span id="sync-status" class="sync-status pending" aria-live="polite">동기화 확인 중</span>
         <span id="user-badge" class="user-badge"></span>
         <button id="switch-user" class="quiet">번호 바꾸기</button>
       </div>
@@ -51,6 +53,7 @@
           <button class="mode-tab active" data-mode="solve">문제 풀기</button>
           <button class="mode-tab" data-mode="review">오답·모름 <span id="review-count">0</span></button>
           <button class="mode-tab" data-mode="concepts">개념 정리</button>
+          <button class="mode-tab" data-mode="progress">풀이 현황</button>
         </nav>
 
         <section class="progress-card solve-only" aria-label="현재 풀이 현황">
@@ -104,6 +107,14 @@
           </div>
           <p class="review-help">현재 복습 대상이 바뀔 때마다 개념과 연결 문항도 즉시 다시 계산됩니다.</p>
           <div id="concept-list" class="concept-list"></div>
+        </section>
+
+        <section id="progress-view" class="progress-view" hidden aria-labelledby="progress-title">
+          <div class="review-hero">
+            <div><p class="eyebrow">같은 출석번호의 모든 기기 기준</p><h2 id="progress-title">전체 풀이 현황</h2></div>
+          </div>
+          <div id="progress-summary" class="progress-summary"></div>
+          <div id="progress-list" class="progress-list"></div>
         </section>
       </main>
     </div>

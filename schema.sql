@@ -9,3 +9,8 @@ CREATE TABLE IF NOT EXISTS discussions (
 CREATE INDEX IF NOT EXISTS idx_discussions_question_time ON discussions(question_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_discussions_ip_time ON discussions(ip_hash, created_at DESC);
 
+CREATE TABLE IF NOT EXISTS progress (
+  attendance_hash TEXT PRIMARY KEY,
+  payload TEXT NOT NULL,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
