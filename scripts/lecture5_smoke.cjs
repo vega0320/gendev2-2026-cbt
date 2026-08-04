@@ -15,6 +15,12 @@ async function answer(page, index, choice, warning = "") {
 (async () => {
   const browser = await chromium.launch({headless: true, executablePath: chromePath});
   try {
+    if (base.startsWith("https://")) {
+      const setup = await browser.newContext();
+      const response = await setup.request.post(`${base}/api/progress`, {data: {attendance: "51", responses: {}}});
+      if (!response.ok()) throw new Error(`5강 시험 계정 초기화 실패: ${response.status()}`);
+      await setup.close();
+    }
     const page = await browser.newPage({viewport: {width: 1440, height: 1000}});
     await page.goto(base, {waitUntil: "networkidle"});
     await page.fill("#attendance", "51");

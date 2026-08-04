@@ -36,6 +36,14 @@ async function checkViewport(browser, viewport, label) {
     executablePath: process.env.CHROME_PATH || "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
   });
   try {
+    if (base.startsWith("https://")) {
+      const setup = await browser.newContext();
+      for (const attendance of ["17", "18"]) {
+        const response = await setup.request.post(`${base}/api/progress`, {data: {attendance, responses: {}}});
+        if (!response.ok()) throw new Error(`기본 시험 계정 초기화 실패: ${attendance}`);
+      }
+      await setup.close();
+    }
     await checkViewport(browser, { width: 1440, height: 1000 }, "desktop");
     await checkViewport(browser, { width: 390, height: 844 }, "mobile");
     console.log("BROWSER_SMOKE_PASS lecture3_examples=2 desktop=pass mobile=pass");
