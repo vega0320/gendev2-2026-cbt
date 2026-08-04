@@ -54,7 +54,7 @@ def main() -> None:
         exp = q.get("explanation")
         if args.pilot and (not exp or len(exp.get("choiceExplanations", [])) != 5):
             fail(f"{qid}: 시험판 선지별 해설 누락", errors)
-        if q.get("lectureNumber") in {"01", "02", "03", "04", "05"}:
+        if q.get("lectureNumber") in {f"{number:02d}" for number in range(1, 11)}:
             if not exp or not exp.get("keyJudgment") or not exp.get("reasoningSteps") or not exp.get("conceptReview"):
                 fail(f"{qid}: 1~5강 상세 해설 누락", errors)
             if q.get("questionMode") != "self-check" and len((exp or {}).get("choiceExplanations", [])) != 5:
@@ -63,7 +63,28 @@ def main() -> None:
                 fail(f"{qid}: 1~5강 해설 출처 누락", errors)
     html = (SITE / "index.html").read_text(encoding="utf-8")
     html_ids = set(re.findall(r'id="([^"]+)"', html))
-    required_ids = {"login", "attendance", "lecture-list", "question-card", "discussion-list", "review-view", "review-list", "concept-view", "concept-list", "sync-status", "progress-view", "progress-summary", "progress-list"}
+    grouped = [q for q in questions if q.get("similarGroupId")]
+    groups: dict[str, list[dict]] = {}
+    for q in grouped:
+        groups.setdefault(q["similarGroupId"], []).append(q)
+    for group_id, members in groups.items():
+        if len(members) < 2:
+            fail(f"{group_id}: 유사문항 묶음에 문항이 1개뿐", errors)
+        if len({q["lectureNumber"] for q in members}) != 1:
+            fail(f"{group_id}: 서로 다른 강의가 한 묶음에 포함", errors)
+        expected_positions = list(range(1, len(members) + 1))
+        if sorted(q.get("similarGroupPosition", 0) for q in members) != expected_positions:
+            fail(f"{group_id}: 유사문항 위치 번호 오류", errors)
+        member_ids = {q["id"] for q in members}
+        for q in members:
+            if not member_ids.difference({q["id"]}).issubset(set(q.get("relatedIds", []))):
+                fail(f"{q['id']}: 같은 묶음 문항 relatedIds 누락", errors)
+    for lecture in {q["lectureNumber"] for q in questions}:
+        orders = [q.get("studyOrder") for q in questions if q["lectureNumber"] == lecture]
+        if sorted(orders) != list(range(1, len(orders) + 1)):
+            fail(f"{lecture}강: studyOrder 중복/누락", errors)
+
+    required_ids = {"login", "attendance", "lecture-list", "question-card", "discussion-list", "review-view", "review-list", "concept-view", "concept-list", "sync-status", "progress-view", "progress-summary", "progress-list", "professors-view", "professors-table"}
     missing_ids = sorted(required_ids - html_ids)
     if missing_ids:
         fail(f"HTML 필수 대상 누락: {missing_ids}", errors)

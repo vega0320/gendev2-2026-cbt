@@ -1,0 +1,15 @@
+.lecture-button small em { font-style: normal; }
+.similar-pill { background: #e8f0ff; color: #174d9d; }
+.professors-table-wrap { overflow: auto; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+.professors-table { width: 100%; min-width: 920px; border-collapse: collapse; }
+.professors-table th, .professors-table td { padding: 12px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); text-align: center; }
+.professors-table tbody th { position: sticky; left: 0; z-index: 1; min-width: 240px; background: #fff; text-align: left; }
+.professors-table thead th { position: sticky; top: 0; background: #eaf0f7; }
+.professors-table .current-professor { background: #183153; color: #fff; font-weight: 900; }
+.professors-table .same-professor { background: #e8f0ff; color: #174d9d; font-weight: 900; }
+.professors-table td small { display: block; margin-top: 4px; font-size: .72rem; }
+
+@media (max-width: 800px) {
+  .professors-table { min-width: 760px; font-size: .88rem; }
+  .professors-table tbody th { min-width: 190px; }
+}

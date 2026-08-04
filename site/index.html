@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="related.css">
   <link rel="stylesheet" href="review.css">
   <link rel="stylesheet" href="progress.css">
+  <link rel="stylesheet" href="professors.css">
 </head>
 <body>
   <div id="login" class="login-shell">
@@ -54,6 +55,7 @@
           <button class="mode-tab" data-mode="review">오답·모름 <span id="review-count">0</span></button>
           <button class="mode-tab" data-mode="concepts">개념 정리</button>
           <button class="mode-tab" data-mode="progress">풀이 현황</button>
+          <button class="mode-tab" data-mode="professors">연도별 교수</button>
         </nav>
 
         <section class="progress-card solve-only" aria-label="현재 풀이 현황">
@@ -115,6 +117,14 @@
           </div>
           <div id="progress-summary" class="progress-summary"></div>
           <div id="progress-list" class="progress-list"></div>
+        </section>
+
+        <section id="professors-view" class="professors-view" hidden aria-labelledby="professors-title">
+          <div class="review-hero">
+            <div><p class="eyebrow">족보 첫 표 기준</p><h2 id="professors-title">강의별 연도별 담당 교수</h2></div>
+          </div>
+          <p class="review-help">2026년 담당 교수와 같은 과거 연도는 파란색으로 강조했습니다. 교수명이 같았던 해의 문제는 강의 탭의 ‘동일 교수 문항’ 수에 포함됩니다.</p>
+          <div id="professors-table" class="professors-table-wrap"></div>
         </section>
       </main>
     </div>
