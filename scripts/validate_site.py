@@ -54,13 +54,13 @@ def main() -> None:
         exp = q.get("explanation")
         if args.pilot and (not exp or len(exp.get("choiceExplanations", [])) != 5):
             fail(f"{qid}: 시험판 선지별 해설 누락", errors)
-        if q.get("lectureNumber") in {f"{number:02d}" for number in range(1, 11)}:
+        if q.get("lectureNumber") in {f"{number:02d}" for number in range(1, 21)}:
             if not exp or not exp.get("keyJudgment") or not exp.get("reasoningSteps") or not exp.get("conceptReview"):
-                fail(f"{qid}: 1~5강 상세 해설 누락", errors)
+                fail(f"{qid}: 1~20강 상세 해설 누락", errors)
             if q.get("questionMode") != "self-check" and len((exp or {}).get("choiceExplanations", [])) != 5:
-                fail(f"{qid}: 1~5강 선지별 해설 5개 누락", errors)
+                fail(f"{qid}: 1~20강 선지별 해설 5개 누락", errors)
             if not (exp or {}).get("sources"):
-                fail(f"{qid}: 1~5강 해설 출처 누락", errors)
+                fail(f"{qid}: 1~20강 해설 출처 누락", errors)
     html = (SITE / "index.html").read_text(encoding="utf-8")
     html_ids = set(re.findall(r'id="([^"]+)"', html))
     grouped = [q for q in questions if q.get("similarGroupId")]
