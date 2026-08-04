@@ -1,4 +1,4 @@
-import { onRequestGet, onRequestPut } from "../functions/api/progress.js";
+import { onRequestGet, onRequestPost } from "../functions/api/progress.js";
 
 let row = null;
 const calls = [];
@@ -21,8 +21,8 @@ const responseState = {
   lastCorrect: false, selfAssessed: false, selfCorrect: null, lastAt: "2026-08-04T01:02:03.000Z",
   ignoredPrivateText: "서버에 저장되면 안 됨",
 };
-const put = await onRequestPut({
-  request: new Request("https://example.test/api/progress", {method: "PUT", headers: {"content-type": "application/json"}, body: JSON.stringify({attendance: "77", responses: {"gendev2-04-2025-q080": responseState}})}),
+const put = await onRequestPost({
+  request: new Request("https://example.test/api/progress", {method: "POST", headers: {"content-type": "application/json"}, body: JSON.stringify({attendance: "77", responses: {"gendev2-04-2025-q080": responseState}})}),
   env: {DB, PROGRESS_SALT: "test-progress-salt"},
 });
 if (put.status !== 200 || !(await put.json()).ok) throw new Error("PUT progress failed");
@@ -32,6 +32,6 @@ const get = await onRequestGet({request: new Request("https://example.test/api/p
 const payload = await get.json();
 if (get.status !== 200 || payload.responses["gendev2-04-2025-q080"]?.attempts !== 2) throw new Error("GET progress failed");
 
-const bad = await onRequestPut({request: new Request("https://example.test/api/progress", {method: "PUT", headers: {"content-type": "application/json"}, body: JSON.stringify({attendance: "bad", responses: {}})}), env: {DB}});
+const bad = await onRequestPost({request: new Request("https://example.test/api/progress", {method: "POST", headers: {"content-type": "application/json"}, body: JSON.stringify({attendance: "bad", responses: {}})}), env: {DB}});
 if (bad.status !== 400) throw new Error("invalid attendance accepted");
 console.log("PROGRESS_API_SMOKE_PASS put=pass get=pass privacy=pass validation=pass");

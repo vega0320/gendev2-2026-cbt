@@ -52,7 +52,7 @@ export async function onRequestGet(context) {
   }
 }
 
-export async function onRequestPut(context) {
+export async function onRequestPost(context) {
   if (!context.env.DB) return json({error: "progress database is not configured"}, 503);
   let input;
   try { input = await context.request.json(); } catch { return json({error: "invalid JSON"}, 400); }
