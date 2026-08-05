@@ -30,3 +30,8 @@
   background: #fff8e8;
   color: #664500;
 }
+
+/* 강의 목록·교수진 탭에 이미 표시되는 2026 교수명은 문제 카드에서 반복하지 않는다. */
+#question-card > .question-meta > .pill:nth-child(2) {
+  display: none;
+}

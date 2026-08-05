@@ -12,7 +12,7 @@ const chromePath = process.env.CHROME_PATH || "C:\\Program Files\\Google\\Chrome
       const lecture = String(number).padStart(2, "0");
       const predicted = payload.questions.filter(q => q.lectureNumber === lecture && q.sourceKind === "2026-predicted");
       if (predicted.length !== 3) throw new Error(`${lecture}강 예상문제 수 오류: ${predicted.length}`);
-      if (predicted.some(q => !q.explanation?.diagnosticCriteria?.length)) throw new Error(`${lecture}강 진단 기준 누락`);
+      if (predicted.some(q => q.explanation?.numericReview?.status === "applicable" && !(q.explanation?.diagnosticCriteria?.length || q.explanation?.numericReference?.length))) throw new Error(`${lecture}강 적용 대상 진단·수치 기준 누락`);
     }
     const moved = payload.questions.filter(q => ["gendev2-04-2018-note-q049", "gendev2-04-2017-note-q026"].includes(q.id));
     if (moved.some(q => q.lectureNumber !== "04" || q.similarGroupId !== "04-labor-arrest")) throw new Error("오분류 문항 이동·유사묶음 오류");

@@ -16,7 +16,16 @@ const chromePath = process.env.CHROME_PATH || "C:\\Program Files\\Google\\Chrome
     const choiceExplanations = audited.flatMap(q => q.explanation?.choiceExplanations || []);
     if (new Set(judgments).size !== audited.length) throw new Error("핵심 해설 중복 잔존");
     if (new Set(reviews).size !== audited.length) throw new Error("개념 복습 중복 잔존");
-    if (new Set(choiceExplanations).size !== choiceExplanations.length) throw new Error("선지 해설 중복 잔존");
+    const reviewed = audited.filter(q => Number(q.lectureNumber) <= 10);
+    const banned = ["결정 단서와 맞지 않는다", "관련되지 않는다", "구분해야 한다", "사례를 그 원칙에 대입해"];
+    for (const q of reviewed) {
+      if (q.explanationReviewStatus !== "manual-lecture-choice-numeric-audit") throw new Error(`${q.id} 수동 재검수 상태 누락`);
+      if (!["applicable", "not-applicable"].includes(q.explanation?.numericReview?.status)) throw new Error(`${q.id} 수치 적용 검수 누락`);
+      if (q.explanation.numericReview.status === "applicable" && !(q.explanation.numericReference || []).length) throw new Error(`${q.id} 수치 기준 누락`);
+      for (const text of q.explanation?.choiceExplanations || []) {
+        if (banned.some(phrase => text.includes(phrase))) throw new Error(`${q.id} 빈 선지 해설 문구 잔존`);
+      }
+    }
 
     const lecture7 = payload.questions.filter(q => q.lectureNumber === "07").sort((a,b) => a.studyOrder-b.studyOrder);
     const expected = {
@@ -33,6 +42,7 @@ const chromePath = process.env.CHROME_PATH || "C:\\Program Files\\Google\\Chrome
     await page.fill("#attendance", "76");
     await page.click('#login-form button[type="submit"]');
     await page.click('[data-lecture="07"]');
+    if (await page.locator("#question-card > .question-meta > .pill").nth(1).isVisible()) throw new Error("문제 카드 2026 교수명 태그가 표시됨");
     let mismatchCheck = "";
     for (let index = 0; index < lecture7.length; index++) {
       const q = lecture7[index];

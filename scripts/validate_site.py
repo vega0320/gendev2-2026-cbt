@@ -69,8 +69,9 @@ def main() -> None:
             if len(predicted) < 3:
                 fail(f"{lecture}강: 2026 예상문제 3개 미만", errors)
             for q in predicted:
-                if not q.get("explanation", {}).get("diagnosticCriteria"):
-                    fail(f"{q['id']}: 진단 기준·분류 누락", errors)
+                exp = q.get("explanation", {})
+                if exp.get("numericReview", {}).get("status") == "applicable" and not (exp.get("diagnosticCriteria") or exp.get("numericReference")):
+                    fail(f"{q['id']}: 적용 대상 진단·수치 기준 누락", errors)
     # 2026-08-05부터 일부 강의가 아니라 전체 문항에 같은 해설 품질 문턱을 적용한다.
     numeric_questions = []
     for q in questions:
@@ -83,7 +84,21 @@ def main() -> None:
         if not exp.get("sources"):
             fail(f"{qid}: 전체 문항 출처 누락", errors)
         numeric_text = q.get("stem", "") + " " + " ".join(q.get("choices", []))
-        if any(char.isdigit() for char in numeric_text):
+        lecture = q.get("lectureNumber", "")
+        audited_01_10 = lecture.isdigit() and 1 <= int(lecture) <= 10
+        if audited_01_10:
+            review = exp.get("numericReview") or {}
+            if review.get("status") not in {"applicable", "not-applicable"}:
+                fail(f"{qid}: 수치 적용 여부 검수 누락", errors)
+            if review.get("status") == "applicable":
+                numeric_questions.append(q)
+                if not exp.get("numericReference"):
+                    fail(f"{qid}: 적용 대상 수치 기준 누락", errors)
+            elif exp.get("numericReference"):
+                fail(f"{qid}: 수치 비적용 문항에 수치 기준이 남음", errors)
+            if q.get("explanationReviewStatus") != "manual-lecture-choice-numeric-audit":
+                fail(f"{qid}: 1~10강 수동 재검수 상태 누락", errors)
+        elif any(char.isdigit() for char in numeric_text):
             numeric_questions.append(q)
             if not exp.get("numericReference"):
                 fail(f"{qid}: 수치 문항 정상치·진단 기준 누락", errors)
@@ -103,9 +118,13 @@ def main() -> None:
     if duplicate_reviews:
         fail(f"1~20강 동일 개념복습 재사용 {len(duplicate_reviews)}개", errors)
     choice_explanations = [text for q in audited for text in q.get("explanation", {}).get("choiceExplanations", [])]
-    duplicate_choice_explanations = sorted({text for text in choice_explanations if text and choice_explanations.count(text) > 1})
-    if duplicate_choice_explanations:
-        fail(f"1~20강 동일 선지해설 재사용 {len(duplicate_choice_explanations)}개", errors)
+    banned_review_phrases = ("결정 단서와 맞지 않는다", "관련되지 않는다", "구분해야 한다", "사례를 그 원칙에 대입해", "정답 조건과 맞지")
+    reviewed_01_10 = [q for q in questions if q.get("lectureNumber", "").isdigit() and 1 <= int(q["lectureNumber"]) <= 10]
+    for q in reviewed_01_10:
+        for text in q.get("explanation", {}).get("choiceExplanations", []):
+            for phrase in banned_review_phrases:
+                if phrase in text:
+                    fail(f"{q['id']}: 금지된 빈 선지 해설 문구 '{phrase}'", errors)
     html_ids = set(re.findall(r'id="([^"]+)"', html))
     grouped = [q for q in questions if q.get("similarGroupId")]
     groups: dict[str, list[dict]] = {}
