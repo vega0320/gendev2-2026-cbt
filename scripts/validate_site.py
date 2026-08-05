@@ -71,7 +71,28 @@ def main() -> None:
             for q in predicted:
                 if not q.get("explanation", {}).get("diagnosticCriteria"):
                     fail(f"{q['id']}: 진단 기준·분류 누락", errors)
+    # 2026-08-05부터 일부 강의가 아니라 전체 문항에 같은 해설 품질 문턱을 적용한다.
+    numeric_questions = []
+    for q in questions:
+        qid = q.get("id", "(no id)")
+        exp = q.get("explanation") or {}
+        if not exp.get("keyJudgment") or not exp.get("reasoningSteps") or not exp.get("conceptReview"):
+            fail(f"{qid}: 전체 문항 핵심·단계·개념 해설 누락", errors)
+        if q.get("questionMode") != "self-check" and len(exp.get("choiceExplanations", [])) != 5:
+            fail(f"{qid}: 전체 문항 선지별 해설 5개 누락", errors)
+        if not exp.get("sources"):
+            fail(f"{qid}: 전체 문항 출처 누락", errors)
+        numeric_text = q.get("stem", "") + " " + " ".join(q.get("choices", []))
+        if any(char.isdigit() for char in numeric_text):
+            numeric_questions.append(q)
+            if not exp.get("numericReference"):
+                fail(f"{qid}: 수치 문항 정상치·진단 기준 누락", errors)
     html = (SITE / "index.html").read_text(encoding="utf-8")
+    app_js = (SITE / "app.js").read_text(encoding="utf-8")
+    if "예상문제 · 비출제" not in app_js or "pill prediction" not in app_js:
+        fail("예상문제 전용 배지 누락", errors)
+    if "evidence.css" not in html:
+        fail("예상문제·수치 기준 스타일시트 누락", errors)
     audited = [q for q in questions if q.get("lectureNumber", "").isdigit() and 1 <= int(q["lectureNumber"]) <= 20]
     judgments = [q.get("explanation", {}).get("keyJudgment", "") for q in audited]
     duplicate_judgments = sorted({text for text in judgments if text and judgments.count(text) > 1})
@@ -112,7 +133,7 @@ def main() -> None:
     if missing_ids:
         fail(f"HTML 필수 대상 누락: {missing_ids}", errors)
     table_images = list((SITE / "assets" / "questions").glob("*-table-*.png"))
-    print(f"VALIDATION_COUNTS questions={len(questions)} assets={sum(len(q.get('assets', [])) for q in questions)} tableImagesOnDisk={len(table_images)}")
+    print(f"VALIDATION_COUNTS questions={len(questions)} numericQuestions={len(numeric_questions)} assets={sum(len(q.get('assets', [])) for q in questions)} tableImagesOnDisk={len(table_images)}")
     if errors:
         print("VALIDATION_FAIL")
         print("\n".join(f"- {error}" for error in errors))

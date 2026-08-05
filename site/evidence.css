@@ -1,0 +1,32 @@
+.pill.prediction {
+  border: 1px solid #d8d0ee;
+  background: #f3f1fb;
+  color: #5a4b86;
+}
+
+.numeric-reference {
+  margin: 16px 0;
+  padding: 16px;
+  border-left: 4px solid #5278ad;
+  border-radius: 10px;
+  background: #eef4fb;
+}
+
+.numeric-reference h3 {
+  color: #294f7e;
+}
+
+.numeric-reference ul,
+.diagnostic-criteria ul {
+  margin: 0;
+  padding-left: 20px;
+  line-height: 1.7;
+}
+
+.common-pitfall {
+  margin: 14px 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #fff8e8;
+  color: #664500;
+}

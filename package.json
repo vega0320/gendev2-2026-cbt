@@ -3,9 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check:js": "node --check site/app.js && node --check functions/api/discussions.js && node --check functions/api/progress.js && node --check scripts/browser_smoke.cjs && node --check scripts/review_smoke.cjs && node --check scripts/notes_smoke.cjs && node --check scripts/explanation_quality_smoke.cjs && node --check scripts/discussion_smoke.mjs && node --check scripts/progress_smoke.mjs && node --check scripts/cross_device_smoke.cjs && node --check scripts/lecture5_smoke.cjs && node --check scripts/similarity_professors_smoke.cjs && node --check scripts/lecture_notes_2026_smoke.cjs",
+    "check:js": "node --check site/app.js && node --check functions/api/discussions.js && node --check functions/api/progress.js && node --check scripts/browser_smoke.cjs && node --check scripts/review_smoke.cjs && node --check scripts/notes_smoke.cjs && node --check scripts/explanation_quality_smoke.cjs && node --check scripts/discussion_smoke.mjs && node --check scripts/progress_smoke.mjs && node --check scripts/cross_device_smoke.cjs && node --check scripts/lecture5_smoke.cjs && node --check scripts/similarity_professors_smoke.cjs && node --check scripts/lecture_notes_2026_smoke.cjs && node --check scripts/predicted_evidence_smoke.cjs",
+    "check:evidence": "python scripts/evidence_content_audit.py && python scripts/validate_site.py",
     "test:api": "node scripts/discussion_smoke.mjs && node scripts/progress_smoke.mjs",
-    "test:browser": "node scripts/browser_smoke.cjs && node scripts/review_smoke.cjs && node scripts/notes_smoke.cjs && node scripts/explanation_quality_smoke.cjs && node scripts/cross_device_smoke.cjs && node scripts/lecture5_smoke.cjs && node scripts/similarity_professors_smoke.cjs && node scripts/lecture_notes_2026_smoke.cjs"
+    "test:browser": "node scripts/browser_smoke.cjs && node scripts/review_smoke.cjs && node scripts/notes_smoke.cjs && node scripts/explanation_quality_smoke.cjs && node scripts/cross_device_smoke.cjs && node scripts/lecture5_smoke.cjs && node scripts/similarity_professors_smoke.cjs && node scripts/lecture_notes_2026_smoke.cjs && node scripts/predicted_evidence_smoke.cjs"
   },
   "devDependencies": {
     "playwright": "^1.58.0",
