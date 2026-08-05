@@ -20,12 +20,15 @@
 ## 검사
 
 ```powershell
+python scripts/apply_explanation_quality_audit.py
+python scripts/prepare_site.py
 python scripts/validate_site.py
 node --check site/app.js
 node --check functions/api/discussions.js
 node scripts/discussion_smoke.mjs
 node scripts/browser_smoke.cjs
 node scripts/review_smoke.cjs
+node scripts/explanation_quality_smoke.cjs
 ```
 
 ## 자료 및 근거

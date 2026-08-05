@@ -61,7 +61,22 @@ def main() -> None:
                 fail(f"{qid}: 1~20강 선지별 해설 5개 누락", errors)
             if not (exp or {}).get("sources"):
                 fail(f"{qid}: 1~20강 해설 출처 누락", errors)
+            if not (exp or {}).get("questionCheck"):
+                fail(f"{qid}: 문제 요구·정답 개수 확인 문구 누락", errors)
     html = (SITE / "index.html").read_text(encoding="utf-8")
+    audited = [q for q in questions if q.get("lectureNumber", "").isdigit() and 1 <= int(q["lectureNumber"]) <= 20]
+    judgments = [q.get("explanation", {}).get("keyJudgment", "") for q in audited]
+    duplicate_judgments = sorted({text for text in judgments if text and judgments.count(text) > 1})
+    if duplicate_judgments:
+        fail(f"1~20강 동일 핵심해설 재사용 {len(duplicate_judgments)}개", errors)
+    concept_reviews = [q.get("explanation", {}).get("conceptReview", "") for q in audited]
+    duplicate_reviews = sorted({text for text in concept_reviews if text and concept_reviews.count(text) > 1})
+    if duplicate_reviews:
+        fail(f"1~20강 동일 개념복습 재사용 {len(duplicate_reviews)}개", errors)
+    choice_explanations = [text for q in audited for text in q.get("explanation", {}).get("choiceExplanations", [])]
+    duplicate_choice_explanations = sorted({text for text in choice_explanations if text and choice_explanations.count(text) > 1})
+    if duplicate_choice_explanations:
+        fail(f"1~20강 동일 선지해설 재사용 {len(duplicate_choice_explanations)}개", errors)
     html_ids = set(re.findall(r'id="([^"]+)"', html))
     grouped = [q for q in questions if q.get("similarGroupId")]
     groups: dict[str, list[dict]] = {}

@@ -196,7 +196,7 @@ def main() -> None:
     args = parser.parse_args()
     payload = json.loads(SOURCE.read_text(encoding="utf-8"))
     for question in payload["questions"]:
-        if question["id"] in PILOT_EXPLANATIONS:
+        if question["id"] in PILOT_EXPLANATIONS and not question.get("explanation"):
             question["explanation"] = PILOT_EXPLANATIONS[question["id"]]
             question["relatedIds"] = [
                 other for other in PILOT_EXPLANATIONS if other != question["id"]
