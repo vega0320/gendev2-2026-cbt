@@ -13,12 +13,16 @@ REPORT = ROOT / "data" / "similarity_report.json"
 
 
 MANUAL_GROUPS = {
+    "04-labor-arrest": ("분만 진행정지·수축 적절성", [
+        "gendev2-04-2026-q953", "gendev2-04-2018-note-q049", "gendev2-04-2017-note-q026",
+    ]),
     "06-placenta-previa": ("전치태반 출혈", [
         "gendev2-06-2025-q087", "gendev2-06-2023-q007",
         "gendev2-06-2022-q056", "gendev2-06-2021-q087",
     ]),
     "06-abruption": ("태반조기박리", [
         "gendev2-06-2025-q088", "gendev2-06-2022-q057", "gendev2-06-2021-q088",
+        "gendev2-06-2019-note-q056", "gendev2-06-2017-note-q021",
     ]),
     "06-early-pregnancy": ("초기임신 출혈·임신위치불명", [
         "gendev2-06-2020-q019", "gendev2-06-2020-q020",
@@ -42,10 +46,10 @@ MANUAL_GROUPS = {
         "gendev2-09-2025-q061", "gendev2-09-2023-q016", "gendev2-09-2022-q049",
     ]),
     "09-contraception": ("산후 피임과 수유", [
-        "gendev2-09-2021-q007", "gendev2-09-2020-q017",
+        "gendev2-09-2021-q007", "gendev2-09-2020-q017", "gendev2-09-2019-note-q077",
     ]),
     "09-endometritis": ("제왕절개 후 자궁내막염", [
-        "gendev2-09-2022-q011", "gendev2-09-2021-q008", "gendev2-09-2020-q018",
+        "gendev2-09-2022-q011", "gendev2-09-2021-q008", "gendev2-09-2020-q018", "gendev2-09-2019-note-q058",
     ]),
     "10-pul-ectopic": ("임신위치불명·자궁외임신", [
         "gendev2-10-2025-q003", "gendev2-10-2023-q086",
@@ -54,6 +58,7 @@ MANUAL_GROUPS = {
     "10-pregnancy-loss": ("초기임신 출혈·유산", [
         "gendev2-10-2025-q004", "gendev2-10-2023-q066",
         "gendev2-10-2022-q006", "gendev2-10-2021-q009",
+        "gendev2-10-2019-note-q037", "gendev2-10-2019-note-q029",
     ]),
     "10-antepartum-bleeding": ("임신후반기 출혈(오분류 의심)", [
         "gendev2-10-2020-q015", "gendev2-10-2020-q016",

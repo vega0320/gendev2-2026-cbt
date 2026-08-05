@@ -14,8 +14,8 @@ const chromePath = process.env.CHROME_PATH || "C:\\Program Files\\Google\\Chrome
     const judgments = audited.map(q => q.explanation?.keyJudgment);
     const reviews = audited.map(q => q.explanation?.conceptReview);
     const choiceExplanations = audited.flatMap(q => q.explanation?.choiceExplanations || []);
-    if (new Set(judgments).size !== 200) throw new Error("핵심 해설 중복 잔존");
-    if (new Set(reviews).size !== 200) throw new Error("개념 복습 중복 잔존");
+    if (new Set(judgments).size !== audited.length) throw new Error("핵심 해설 중복 잔존");
+    if (new Set(reviews).size !== audited.length) throw new Error("개념 복습 중복 잔존");
     if (new Set(choiceExplanations).size !== choiceExplanations.length) throw new Error("선지 해설 중복 잔존");
 
     const lecture7 = payload.questions.filter(q => q.lectureNumber === "07").sort((a,b) => a.studyOrder-b.studyOrder);
@@ -41,13 +41,13 @@ const chromePath = process.env.CHROME_PATH || "C:\\Program Files\\Google\\Chrome
       await page.click("#submit-answer");
       await page.waitForSelector("text=정답입니다.");
       if (await page.locator(".choice-explanation").count() !== 5) throw new Error(`${q.id} 선지별 해설 5개 표시 실패`);
-      if (await page.locator(".question-check").count() !== 1) throw new Error(`${q.id} 문제 요구 확인 표시 실패`);
-      if (q.id === "gendev2-07-2020-q014") mismatchCheck = await page.locator(".question-check").innerText();
+      if (await page.locator(".question-check").count() !== 0) throw new Error(`${q.id} 내부 검수 문구가 화면에 노출됨`);
+      if (q.id === "gendev2-07-2020-q014") mismatchCheck = q.explanation.questionCheck || "";
     }
     if (!mismatchCheck.includes("3개") || !mismatchCheck.includes("2개")) throw new Error(`2020-014 정답 개수 불일치 경고 누락: ${mismatchCheck}`);
     await page.setViewportSize({width: 390, height: 844});
     await page.screenshot({path: "work/mobile-lecture7-audit.png", fullPage: true});
-    console.log("EXPLANATION_QUALITY_BROWSER_PASS unique=200 choices=995 lecture7=9 corrected_answers=pass count_warning=pass mobile=pass");
+    console.log(`EXPLANATION_QUALITY_BROWSER_PASS unique=${audited.length} choices=${choiceExplanations.length} lecture7=${lecture7.length} corrected_answers=pass count_warning=pass mobile=pass`);
   } finally {
     await browser.close();
   }

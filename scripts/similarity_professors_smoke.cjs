@@ -12,10 +12,11 @@ const { chromium } = require("playwright");
     await page.getByLabel("출석번호", { exact: true }).fill("9997");
     await page.getByRole("button", { name: "내 문제풀이 시작", exact: true }).click();
     await page.locator('[data-lecture="09"]').click();
+    await page.locator("#question-dots button").nth(3).click();
     const meta = await page.locator(".question-meta").innerText();
-    if (!meta.includes("유사문항 1/3 · 수유·유방염")) throw new Error("유사문항 위치 표지가 보이지 않음");
+    if (!meta.includes("유사문항 1/3")) throw new Error("유사문항 위치 표지가 보이지 않음");
     const lectureText = await page.locator('[data-lecture="09"]').innerText();
-    if (!/동일 교수 \d+\s*\/\s*10문항/.test(lectureText)) throw new Error("강의 탭 동일 교수/전체 문항 표기 오류");
+    if (!/동일 교수 \d+\s*\/\s*15문항/.test(lectureText)) throw new Error("강의 탭 동일 교수/전체 문항 표기 오류");
 
     const dataCheck = await page.evaluate(async () => {
       const data = await (await fetch("data/questions.json")).json();

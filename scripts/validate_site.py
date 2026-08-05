@@ -22,7 +22,7 @@ def main() -> None:
     errors: list[str] = []
     payload = json.loads((SITE / "data" / "questions.json").read_text(encoding="utf-8"))
     questions = payload.get("questions", [])
-    expected = 3 if args.pilot else 450
+    expected = 3 if args.pilot else 499
     if len(questions) != expected:
         fail(f"문항 수: expected={expected}, actual={len(questions)}", errors)
     ids = [q.get("id") for q in questions]
@@ -63,6 +63,14 @@ def main() -> None:
                 fail(f"{qid}: 1~20강 해설 출처 누락", errors)
             if not (exp or {}).get("questionCheck"):
                 fail(f"{qid}: 문제 요구·정답 개수 확인 문구 누락", errors)
+    if not args.pilot:
+        for lecture in [f"{number:02d}" for number in range(1, 11)]:
+            predicted = [q for q in questions if q.get("lectureNumber") == lecture and q.get("sourceKind") == "2026-predicted"]
+            if len(predicted) < 3:
+                fail(f"{lecture}강: 2026 예상문제 3개 미만", errors)
+            for q in predicted:
+                if not q.get("explanation", {}).get("diagnosticCriteria"):
+                    fail(f"{q['id']}: 진단 기준·분류 누락", errors)
     html = (SITE / "index.html").read_text(encoding="utf-8")
     audited = [q for q in questions if q.get("lectureNumber", "").isdigit() and 1 <= int(q["lectureNumber"]) <= 20]
     judgments = [q.get("explanation", {}).get("keyJudgment", "") for q in audited]

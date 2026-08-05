@@ -235,6 +235,15 @@ def main() -> None:
     target = [q for q in questions if q.get("lectureNumber", "").isdigit() and 1 <= int(q["lectureNumber"]) <= 20]
     by_id = {q["id"]: q for q in questions}
 
+    diagnostic_by_lecture = {
+        "05": ["조산: 임신 37+0주 이전 출생", "조기진통은 규칙 자궁수축과 자궁목 변화로 진단하며 수축만으로 확정하지 않는다."],
+        "06": ["산후출혈: 출산 과정 24시간 이내 누적 실혈 ≥1,000 mL 또는 실혈량과 무관한 저혈량 징후", "원인 4T: Tone·Trauma·Tissue·Thrombin"],
+        "07": ["고혈압: ≥140/90 mmHg; 중증 혈압: ≥160/110 mmHg", "중증 소견: 혈소판 <100,000, Cr >1.1 mg/dL 또는 2배, 간효소 ≥2배, 폐부종, 지속 신경증상 등", "단백뇨가 없어도 새 고혈압과 말단장기 기능장애가 있으면 자간전증을 진단할 수 있다."],
+        "08": ["FGR: EFW 또는 복부둘레 <10백분위수; severe FGR: EFW <3백분위수", "도플러 단계와 태아감시·동반질환이 분만시기를 결정한다."],
+        "09": ["산후 발열은 자궁압통·오로, 상처, 유방, 소변·호흡기 증상과 혈전 위험을 함께 평가한다.", "제왕절개와 장시간 막파수는 산후 자궁내막염의 주요 위험인자다."],
+        "10": ["초기임신소실 확진 초음파 기준에는 CRL ≥7 mm인데 심박동 없음, MSD ≥25 mm인데 배아 없음이 포함된다.", "위치불명임신은 최종 진단이 아니며 위치가 확인될 때까지 hCG·질초음파·증상을 추적한다."],
+    }
+
     for qid, spec in L7.items():
         q = by_id[qid]
         q["answers"] = spec["answers"]
@@ -260,6 +269,8 @@ def main() -> None:
     review_counts = Counter(q.get("explanation", {}).get("conceptReview", "") for q in target)
     for q in target:
         exp = q.setdefault("explanation", {})
+        if not exp.get("diagnosticCriteria") and q.get("lectureNumber") in diagnostic_by_lecture:
+            exp["diagnosticCriteria"] = diagnostic_by_lecture[q["lectureNumber"]]
         q["questionCheck"] = question_check(q)
         exp["questionCheck"] = q["questionCheck"]
         if q["id"] in L7:

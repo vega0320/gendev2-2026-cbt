@@ -26,14 +26,14 @@ async function answer(page, index, choice, warning = "") {
     await page.fill("#attendance", "51");
     await page.click('#login-form button[type="submit"]');
     await page.click('[data-lecture="05"]');
-    await answer(page, 0, 3);
+    await answer(page, 5, 3);
     if ((await page.locator(".asset-button img").count()) !== 2) throw new Error("5강 2025년 1번 이미지 2개 누락");
-    await answer(page, 2, 4, "현재 선호 약제와 차이");
-    await answer(page, 9, 2, "항생제 금기");
+    await answer(page, 7, 4, "현재 선호 약제와 차이");
+    await answer(page, 14, 2, "항생제 금기");
     await page.screenshot({path: "work/lecture5-desktop.png", fullPage: true});
     await page.setViewportSize({width: 390, height: 844});
     await page.screenshot({path: "work/lecture5-mobile.png", fullPage: true});
-    console.log("LECTURE5_BROWSER_PASS explanations=10 images=pass current_guideline_warnings=pass mobile=pass");
+    console.log("LECTURE5_BROWSER_PASS explanations=15 images=pass current_guideline_warnings=pass mobile=pass");
   } finally {
     await browser.close();
   }
