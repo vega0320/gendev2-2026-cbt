@@ -38,7 +38,7 @@ async function login(page, attendance) {
     if (!meta.includes("시도 1 · 오답 0") || !(await mobile.locator(".choice.correct").count())) throw new Error("실제 서버의 같은 번호 기록 공유 실패");
     await mobile.click('[data-mode="progress"]');
     const progress = await mobile.locator("#progress-view").innerText();
-    if (!progress.includes("1/10문항")) throw new Error("실제 서버 기록의 풀이 현황 반영 실패");
+    if (!progress.includes("1/15문항")) throw new Error("실제 서버 기록의 풀이 현황 반영 실패");
 
     const otherContext = await browser.newContext({viewport: {width: 390, height: 844}});
     const other = await otherContext.newPage();

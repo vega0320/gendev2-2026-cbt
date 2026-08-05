@@ -35,7 +35,7 @@ async function login(page, attendance) {
     await first.click("#submit-answer");
     await first.waitForSelector("text=정답입니다.");
     await first.waitForFunction(() => document.querySelector("#sync-status")?.textContent === "기기 간 동기화됨");
-    if (!server.get("77")?.["gendev2-01-2025-q051"]) throw new Error("첫 기기 기록 업로드 실패");
+    if (!server.get("77")?.["gendev2-01-2026-q951"]) throw new Error("첫 기기 기록 업로드 실패");
 
     const secondContext = await browser.newContext({viewport: {width: 390, height: 844}});
     const second = await secondContext.newPage();
@@ -46,7 +46,7 @@ async function login(page, attendance) {
     await second.click('[data-mode="progress"]');
     if ((await second.locator(".lecture-progress").count()) !== 41) throw new Error("강의별 풀이 현황 누락");
     const progressText = await second.locator("#progress-view").innerText();
-    if (!progressText.includes("푼 문항") || !progressText.includes("1/10문항")) throw new Error("전체 또는 강의별 풀이 집계 오류");
+    if (!progressText.includes("푼 문항") || !progressText.includes("1/15문항")) throw new Error("전체 또는 강의별 풀이 집계 오류");
     await second.screenshot({path: "work/cross-device-progress-mobile.png", fullPage: true});
     await second.locator('[data-progress-lecture="01"]').click();
     if ((await second.locator("#progress-view").isVisible())) throw new Error("현황에서 강의로 이동 실패");
