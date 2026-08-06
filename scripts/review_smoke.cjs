@@ -37,6 +37,12 @@ const chromePath = process.env.CHROME_PATH || "C:\\Program Files\\Google\\Chrome
 
     await page.click('[data-mode="concepts"]');
     if ((await page.locator(".concept-card").count()) < 1) throw new Error("개념 정리 생성 실패");
+    const conceptText = await page.locator(".concept-card").first().innerText();
+    if (!conceptText.includes("문제를 가른 핵심") || !conceptText.includes("본과 개념 정리")) throw new Error("개념 정리 상세 내용 누락");
+    await page.screenshot({ path: "work/desktop-concepts.png", fullPage: true });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.screenshot({ path: "work/mobile-concepts.png", fullPage: true });
+    await page.setViewportSize({ width: 1440, height: 1000 });
     await page.click('[data-mode="review"]');
     await page.click("[data-review-retry]");
     await page.locator('[data-choice="2"]').click();
@@ -52,9 +58,24 @@ const chromePath = process.env.CHROME_PATH || "C:\\Program Files\\Google\\Chrome
     await page.click('[data-mode="review"]');
     if ((await page.locator(".review-card").count()) !== 0) throw new Error("출석번호별 복습 기록 분리 실패");
 
+    await page.click("#switch-user");
+    await page.fill("#attendance", "29");
+    await page.click('#login-form button[type="submit"]');
+    await page.click('[data-lecture="03"]');
+    await page.click("[data-unknown-toggle]");
+    await page.click("#next-question");
+    await page.click("[data-unknown-toggle]");
+    await page.click('[data-mode="review"]');
+    if ((await page.locator(".review-card").count()) !== 2) throw new Error("연속 복습 시험용 목록 2개 생성 실패");
+    await page.click("#review-all-retry");
+    if ((await page.locator("#question-dots .dot").count()) !== 2) throw new Error("오답·모름 전체 연속 풀이 범위 생성 실패");
+    if (!(await page.locator("#progress-scope").innerText()).includes("1/2")) throw new Error("연속 풀이 현재 위치 표시 실패");
+    await page.click("#next-question");
+    if (!(await page.locator("#progress-scope").innerText()).includes("2/2")) throw new Error("연속 풀이 다음 문제 이동 실패");
+
     await page.setViewportSize({ width: 390, height: 844 });
     await page.screenshot({ path: "work/mobile-review-empty.png", fullPage: true });
-    console.log("REVIEW_BROWSER_PASS wrong=pass unknown=pass concepts=pass retry=pass isolation=pass sidebar=pass mobile=pass");
+    console.log("REVIEW_BROWSER_PASS wrong=pass unknown=pass concepts=content retry=single+continuous isolation=pass sidebar=pass mobile=pass");
   } finally {
     await browser.close();
   }

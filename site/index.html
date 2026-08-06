@@ -111,9 +111,9 @@
         <section id="review-view" class="review-view" hidden aria-labelledby="review-title">
           <div class="review-hero">
             <div><p class="eyebrow">현재 출석번호에만 저장</p><h2 id="review-title">오답·모름 다시 확인</h2></div>
-            <div class="review-totals"><span>복습할 문제 <strong id="review-total">0</strong></span><span>관련 개념 <strong id="review-concept-total">0</strong></span></div>
+            <div class="review-hero-actions"><div class="review-totals"><span>복습할 문제 <strong id="review-total">0</strong></span><span>관련 개념 <strong id="review-concept-total">0</strong></span></div><button id="review-all-retry" class="primary">전체 연속 풀기</button></div>
           </div>
-          <p class="review-help">마지막 채점에서 틀렸거나 직접 ‘모름’으로 표시한 문제입니다. 다시 풀어 맞히면 오답에서는 빠지고, 모름 표시는 직접 해제할 수 있습니다.</p>
+          <p class="review-help">마지막 채점에서 틀렸거나 직접 ‘모름’으로 표시한 문제입니다. ‘전체 연속 풀기’를 누르면 현재 목록을 한 문제씩 끊지 않고 이어서 풀 수 있습니다.</p>
           <div id="review-list" class="review-list"></div>
         </section>
 
@@ -121,7 +121,7 @@
           <div class="review-hero">
             <div><p class="eyebrow">오답·모름에서 자동 추출</p><h2 id="concept-title">다시 봐야 할 개념</h2></div>
           </div>
-          <p class="review-help">현재 복습 대상이 바뀔 때마다 개념과 연결 문항도 즉시 다시 계산됩니다.</p>
+          <p class="review-help">현재 복습 대상 문항의 핵심 판단, 본과 개념, 진단기준과 수치기준을 같은 개념끼리 묶었습니다. 목록이 바뀌면 즉시 다시 계산됩니다.</p>
           <div id="concept-list" class="concept-list"></div>
         </section>
 

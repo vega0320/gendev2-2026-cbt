@@ -15,6 +15,7 @@
 .dot.needs-review.unknown{box-shadow:inset 0 -3px 0 var(--red),inset 0 3px 0 var(--amber)}
 .review-view,.concept-view{padding:26px;background:#fff;border:1px solid var(--line);border-radius:22px}
 .review-hero{display:flex;justify-content:space-between;align-items:center;gap:18px}
+.review-hero-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
 .review-hero h2{margin:0}
 .review-totals{display:flex;gap:10px}
 .review-totals span{padding:10px 13px;border-radius:12px;background:#f0f4f9;color:var(--muted)}
@@ -37,10 +38,19 @@
 .concept-card header{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .concept-card h3{margin:0}
 .concept-card header>span{padding:7px 10px;border-radius:999px;background:#eaf0f7;font-weight:900}
+.concept-summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.concept-summary-section{padding:14px;border:1px solid #dbe3ee;border-radius:13px;background:#fff}
+.concept-summary-section h4{margin:0 0 8px;color:#233a5e}
+.concept-summary-section ul{margin:0;padding-left:20px;line-height:1.65}
+.concept-summary-section li+li{margin-top:6px}
+.concept-key{border-left:4px solid #3976cf}
+.concept-criteria{border-left:4px solid #7f5ac7;background:#fbf9ff}
+.concept-numeric{border-left:4px solid #2c9b67;background:#f7fff9}
+.concept-pitfall{border-left:4px solid #e2a426;background:#fffdf5}
 .concept-question-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;margin-top:14px}
 .concept-question-list button{display:flex;justify-content:space-between;gap:10px;padding:11px;border:1px solid var(--line);border-radius:11px;background:#fff;text-align:left}
 .concept-question-list button strong{color:var(--red);font-size:.8rem}
 .empty-review{padding:48px 20px;text-align:center;border:1px dashed #b8c4d4;border-radius:16px;color:var(--muted)}
 .empty-review h3{color:var(--ink)}
-@media(max-width:800px){.review-view,.concept-view{padding:18px 14px}.review-hero{align-items:flex-start;flex-direction:column}.review-totals{width:100%}.review-totals span{flex:1}.review-card{grid-template-columns:1fr}.review-actions{flex-direction:row;flex-wrap:wrap}.review-actions button{flex:1}.unknown-toggle{margin-left:0}}
+@media(max-width:800px){.review-view,.concept-view{padding:18px 14px}.review-hero{align-items:flex-start;flex-direction:column}.review-hero-actions{width:100%;justify-content:stretch}.review-hero-actions>.primary{width:100%}.review-totals{width:100%}.review-totals span{flex:1}.review-card{grid-template-columns:1fr}.review-actions{flex-direction:row;flex-wrap:wrap}.review-actions button{flex:1}.unknown-toggle{margin-left:0}.concept-summary-grid{grid-template-columns:1fr}}
 @media print{.mode-tabs{display:none!important}}

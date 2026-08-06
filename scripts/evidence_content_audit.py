@@ -43,6 +43,8 @@ def main() -> None:
                     errors.append(f"{qid}: lecture 1-13 independent choice review marker missing")
             if audited_14_20 and question.get("explanationReviewStatus") != "manual-choice-independent-audit-14-20":
                 errors.append(f"{qid}: lecture 14-20 independent choice review marker missing")
+            if question.get("semanticChoiceReviewStatus") != "manual-semantic-audit-2026-08-06":
+                errors.append(f"{qid}: lecture 1-20 semantic choice review marker missing")
         elif any(char.isdigit() for char in text):
             numeric.append(question)
             if not exp.get("numericReference"):
@@ -70,6 +72,9 @@ def main() -> None:
     for phrase in ("결정 단서와 맞지 않는다", "관련되지 않는다", "구분해야 한다", "사례를 그 원칙에 대입해", "정답 조건과 맞지"):
         if any(phrase in text for text in reviewed_choices):
             errors.append(f"lecture 1-20 banned choice phrase remains: {phrase}")
+    for phrase in ("생리량의 변화 방향", "제시된 조치다", "답으로 채택하려면", "후보이므로", "검사 시점은"):
+        if any(phrase in text for text in reviewed_choices):
+            errors.append(f"lecture 1-20 generic fallback remains: {phrase}")
     predicted = [q for q in questions if q.get("sourceKind") == "2026-predicted"]
     judgments = [q.get("explanation", {}).get("keyJudgment", "") for q in questions]
     print(
