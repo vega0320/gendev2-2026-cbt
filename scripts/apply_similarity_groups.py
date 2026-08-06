@@ -101,6 +101,8 @@ def reclassify_suspected_questions(payload: dict) -> list[dict]:
             raise SystemExit(f"{question['id']}: target lecture missing {target}")
         old = question["lectureNumber"]
         if old == target:
+            original = question.get("id", "").split("-")[1] if question.get("id", "").startswith("gendev2-") else old
+            question["classificationStatus"] = f"오분류 재배치 완료: 원본 {original}강 → 내용상 {target}강"
             continue
         lecture = lectures[target]
         question["lectureNumber"] = target

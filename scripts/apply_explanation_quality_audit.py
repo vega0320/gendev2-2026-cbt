@@ -275,56 +275,18 @@ def main() -> None:
         exp["questionCheck"] = q["questionCheck"]
         if q["id"] in L7:
             continue
-        focus = clean_focus(q.get("stem", ""))
-        answers = answer_text(q)
-        key = exp.get("keyJudgment", "").strip()
-        if key_counts[key] > 1:
-            exp["keyJudgment"] = f"{key} 이 문항에서는 ‘{focus}’라는 사례를 그 원칙에 대입해 {answers}를 선택한다."
-        steps = tuple(exp.get("reasoningSteps", []))
-        if step_counts[steps] > 1:
-            direction, count = direction_for(q)
-            exp["reasoningSteps"] = [
-                f"먼저 문제 요구를 확인한다: {direction} {count or ''}개.",
-                f"사례의 핵심 단서는 ‘{focus}’다.",
-                f"각 선지를 이 단서와 대조하고 최종적으로 {answers}를 남긴다.",
-            ]
-        exp["choiceExplanations"] = generic_choice_explanations(q, exp)
+        # 반복 출제된 같은 개념은 판단문과 알고리듬이 같을 수 있다. 중복을 없애겠다고
+        # 문제·정답 문장을 덧붙이면 해설이 길어질 뿐 의학적 정보는 늘지 않는다.
+        # 따라서 이 감사 단계에서는 내용을 자동 재작성하지 않는다.
+        # 선지 해설은 앞선 문항별 검수 결과를 보존한다. 감사 단계에서 공통 fallback으로
+        # 덮어쓰면 서로 다른 선지에 같은 설명이 들어가는 회귀가 생긴다.
         if not exp.get("sources"):
             exp["sources"] = [WILLIAMS]
-        review = exp.get("conceptReview", "").strip()
-        if review_counts[review] > 1:
-            distractors = [f"{CIRCLED[i]} {choice}" for i, choice in enumerate(q.get("choices", [])) if i + 1 not in q.get("answers", [])][:2]
-            exp["conceptReview"] = f"{review} 이 문항에서는 정답 {answers}를 {', '.join(distractors)}와 구별하는 것이 재출제 포인트다."
+        # 개념 복습에는 선지 원문을 다시 붙이지 않는다.
         audit_label = "문항 방향/정답 개수/중복 해설 품질감사 2026-08-05"
         if audit_label not in exp.get("evidenceStatus", ""):
             exp["evidenceStatus"] = (exp.get("evidenceStatus", "") + " · " + audit_label).strip(" ·")
         q["explanationReviewStatus"] = exp["evidenceStatus"]
-
-    final_counts = Counter(q["explanation"]["keyJudgment"] for q in target)
-    for q in target:
-        exp = q["explanation"]
-        if final_counts[exp["keyJudgment"]] > 1:
-            exp["keyJudgment"] += f" 특히 이 문항은 {q['year']}년 {q.get('displayNumber') or str(q.get('number')) + '번'}에 제시된 표·사진·문구를 기준으로 판정한다."
-
-    for q in target:
-        review = q["explanation"].get("conceptReview", "")
-        if " 이 문항에서는" in review:
-            base, *tails = review.split(" 이 문항에서는")
-            unique_tails = list(dict.fromkeys(tails))
-            q["explanation"]["conceptReview"] = base + "".join(" 이 문항에서는" + tail for tail in unique_tails)
-    final_review_counts = Counter(q["explanation"].get("conceptReview", "") for q in target)
-    for q in target:
-        exp = q["explanation"]
-        if final_review_counts[exp.get("conceptReview", "")] > 1:
-            exp["conceptReview"] += f" 같은 개념의 반복문항 중 이 문제는 {q['year']}년 {q.get('displayNumber') or str(q.get('number')) + '번'}의 사례 단서로 다시 판정한다."
-
-    all_choice_explanations = [text for q in target for text in q["explanation"].get("choiceExplanations", [])]
-    final_choice_counts = Counter(all_choice_explanations)
-    for q in target:
-        exp = q["explanation"]
-        for index, text in enumerate(exp.get("choiceExplanations", [])):
-            if final_choice_counts[text] > 1:
-                exp["choiceExplanations"][index] += f" 이 평가는 {q['year']}년 {q.get('displayNumber') or str(q.get('number')) + '번'}의 {CIRCLED[index]} 선지에 적용한다."
 
     DATA.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     unique_keys = len({q["explanation"]["keyJudgment"] for q in target})

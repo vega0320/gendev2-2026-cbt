@@ -20,7 +20,15 @@
 ## 검사
 
 ```powershell
-python scripts/apply_explanation_quality_audit.py
+python scripts/apply_lectures11_20_explanations.py
+python scripts/apply_lectures6_10_explanations.py
+python scripts/review_lectures_14_20.py
+python scripts/review_lectures_01_13.py
+python scripts/review_lecture01_reasoning.py
+python scripts/review_lecture09_evidence.py
+python scripts/repair_explanation_integrity.py
+python scripts/enhance_reasoning_steps.py
+python scripts/audit_explanation_integrity.py
 python scripts/prepare_site.py
 python scripts/validate_site.py
 node --check site/app.js
