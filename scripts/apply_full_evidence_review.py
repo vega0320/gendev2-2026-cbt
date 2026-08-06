@@ -125,9 +125,9 @@ def make_explanation(question: dict) -> dict:
     choice_explanations = []
     for index, choice in enumerate(choices, 1):
         if index in answers:
-            choice_explanations.append(f"정답. 핵심 단서 ‘{clue_for_choice}’를 적용하면 ‘{choice}’가 {demand}에 해당한다. {guide}")
+            choice_explanations.append(f"{guide} 이 판단축을 적용하면 문항이 요구한 결론에 도달한다.")
         else:
-            choice_explanations.append(f"오답. ‘{choice}’는 핵심 단서 ‘{clue_for_choice}’에 맞는 {demand}이 아니다. 이 강의에서는 다음 판단축을 적용한다: {guide}")
+            choice_explanations.append(f"{guide} 이 판단축과 맞지 않는 조건·기전·처치는 제외한다.")
     exp = {
         "keyJudgment": f"핵심 단서 ‘{clue_for_choice}’를 적용하면 {answer_text}가 정답이다. {guide}",
         "reasoningSteps": [

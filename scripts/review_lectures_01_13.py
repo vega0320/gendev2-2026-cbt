@@ -313,11 +313,9 @@ def build_choice_explanations(question: dict) -> list[str]:
     output = []
     for index, choice in enumerate(question.get("choices", []), 1):
         fact = extra_fact(choice, question)
-        if index in answers:
-            verdict = "정답(틀린 진술)" if negative else "정답"
-        else:
-            verdict = "제외(옳은 진술)" if negative else "오답"
-        output.append(f"‘{choice}’ — {verdict}. {fact}")
+        # 카드 위쪽에 선지와 정오 색상이 이미 보인다. 해설에는 선지 문장이나
+        # "정답/오답" 판정을 되풀이하지 않고, 판단에 필요한 의학적 사실만 둔다.
+        output.append(fact)
     return output
 
 

@@ -713,7 +713,8 @@ def main() -> None:
                 verdict = "정답(틀린 진술)" if negative else "정답"
             else:
                 verdict = "제외(옳은 진술)" if negative else "오답"
-            choice_explanations.append(f"‘{clean(choice)}’ — {verdict}. {choice_fact(question, index)}")
+            # 선지 원문과 채점 결과는 같은 카드에 이미 표시된다.
+            choice_explanations.append(choice_fact(question, index))
         explanation["choiceExplanations"] = choice_explanations
         criteria, numeric = numeric_profile(question)
         explanation["diagnosticCriteria"] = criteria

@@ -87,6 +87,8 @@ def main() -> None:
         lecture = q.get("lectureNumber", "")
         audited_01_13 = lecture.isdigit() and 1 <= int(lecture) <= 13
         audited_14_20 = lecture.isdigit() and 14 <= int(lecture) <= 20
+        audited_21_26 = lecture.isdigit() and 21 <= int(lecture) <= 26
+        audited_27_32 = lecture.isdigit() and 27 <= int(lecture) <= 32
         if audited_01_13 or audited_14_20:
             review = exp.get("numericReview") or {}
             if review.get("status") not in {"applicable", "not-applicable"}:
@@ -102,6 +104,14 @@ def main() -> None:
                     fail(f"{qid}: 1~13강 독립 선지 재검수 상태 누락", errors)
             if audited_14_20 and q.get("explanationReviewStatus") != "manual-choice-independent-audit-14-20":
                 fail(f"{qid}: 14~20강 독립 선지 재검수 상태 누락", errors)
+        elif audited_21_26 or audited_27_32:
+            expected = "manual-choice-independent-audit-21-26" if audited_21_26 else "manual-choice-independent-audit-27-32"
+            if q.get("explanationReviewStatus") != expected:
+                fail(f"{qid}: 21~32강 독립 선지 재검수 상태 누락", errors)
+            if any(char.isdigit() for char in numeric_text):
+                numeric_questions.append(q)
+                if not (exp.get("numericReference") or exp.get("diagnosticCriteria")):
+                    fail(f"{qid}: 수치 문항 진단·수치 기준 누락", errors)
         elif any(char.isdigit() for char in numeric_text):
             numeric_questions.append(q)
             if not exp.get("numericReference"):
@@ -123,8 +133,8 @@ def main() -> None:
         fail(f"1~20강 동일 개념복습 재사용 {len(duplicate_reviews)}개", errors)
     choice_explanations = [text for q in audited for text in q.get("explanation", {}).get("choiceExplanations", [])]
     banned_review_phrases = ("결정 단서와 맞지 않는다", "관련되지 않는다", "구분해야 한다", "사례를 그 원칙에 대입해", "정답 조건과 맞지")
-    reviewed_01_20 = [q for q in questions if q.get("lectureNumber", "").isdigit() and 1 <= int(q["lectureNumber"]) <= 20]
-    for q in reviewed_01_20:
+    reviewed_01_32 = [q for q in questions if q.get("lectureNumber", "").isdigit() and 1 <= int(q["lectureNumber"]) <= 32]
+    for q in reviewed_01_32:
         for text in q.get("explanation", {}).get("choiceExplanations", []):
             for phrase in banned_review_phrases:
                 if phrase in text:

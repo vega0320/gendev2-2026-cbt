@@ -53,6 +53,7 @@ def main() -> None:
     parser.add_argument("--data", type=Path, default=DEFAULT_DATA)
     parser.add_argument("--fail", action="store_true")
     parser.add_argument("--limit", type=int, default=80)
+    parser.add_argument("--through", type=int, default=32)
     args = parser.parse_args()
     questions = json.loads(args.data.read_text(encoding="utf-8"))["questions"]
     rows = []
@@ -62,7 +63,7 @@ def main() -> None:
     banned = ("생리량의 변화 방향", "제시된 조치다", "답으로 채택하려면", "후보이므로", "검사 시점은")
     for question in questions:
         lecture = question.get("lectureNumber", "")
-        if not lecture.isdigit() or not 1 <= int(lecture) <= 20:
+        if not lecture.isdigit() or not 1 <= int(lecture) <= args.through:
             continue
         explanations = (question.get("explanation") or {}).get("choiceExplanations", [])
         if len(explanations) != 5:
