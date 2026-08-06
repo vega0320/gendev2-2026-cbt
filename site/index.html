@@ -60,6 +60,18 @@
           <button class="mode-tab" data-mode="professors">연도별 교수</button>
         </nav>
 
+        <section class="question-filter solve-only" aria-label="문제 검색과 우선 문제 필터">
+          <label class="question-search" for="question-search">
+            <span>문제 검색</span>
+            <input id="question-search" type="search" autocomplete="off" placeholder="문제·선지·개념 검색 (입력하면 전체 강의 검색)">
+          </label>
+          <label class="same-professor-filter" for="same-professor-only">
+            <input id="same-professor-only" type="checkbox">
+            <span>올해와 동일 교수 문제만</span>
+          </label>
+          <strong id="question-filter-count" aria-live="polite"></strong>
+        </section>
+
         <section class="progress-card solve-only" aria-label="현재 풀이 현황">
           <div><span>범위</span><strong id="progress-scope">-</strong></div>
           <div><span>문항</span><strong id="progress-total">0</strong></div>

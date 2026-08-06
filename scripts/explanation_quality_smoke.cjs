@@ -16,10 +16,10 @@ const chromePath = process.env.CHROME_PATH || "C:\\Program Files\\Google\\Chrome
     const choiceExplanations = audited.flatMap(q => q.explanation?.choiceExplanations || []);
     if (new Set(judgments).size !== audited.length) throw new Error("핵심 해설 중복 잔존");
     if (new Set(reviews).size !== audited.length) throw new Error("개념 복습 중복 잔존");
-    const reviewed = audited.filter(q => Number(q.lectureNumber) <= 10);
+    const reviewed = audited.filter(q => Number(q.lectureNumber) <= 13);
     const banned = ["결정 단서와 맞지 않는다", "관련되지 않는다", "구분해야 한다", "사례를 그 원칙에 대입해"];
     for (const q of reviewed) {
-      if (q.explanationReviewStatus !== "manual-lecture-choice-numeric-audit") throw new Error(`${q.id} 수동 재검수 상태 누락`);
+      if (q.explanationReviewStatus !== "manual-choice-independent-audit-01-13") throw new Error(`${q.id} 독립 선지 재검수 상태 누락`);
       if (!["applicable", "not-applicable"].includes(q.explanation?.numericReview?.status)) throw new Error(`${q.id} 수치 적용 검수 누락`);
       if (q.explanation.numericReview.status === "applicable" && !(q.explanation.numericReference || []).length) throw new Error(`${q.id} 수치 기준 누락`);
       for (const text of q.explanation?.choiceExplanations || []) {

@@ -18,14 +18,11 @@ MANUAL_GROUPS = {
     ]),
     "06-placenta-previa": ("전치태반 출혈", [
         "gendev2-06-2025-q087", "gendev2-06-2023-q007",
-        "gendev2-06-2022-q056", "gendev2-06-2021-q087",
+        "gendev2-06-2022-q056", "gendev2-06-2021-q087", "gendev2-10-2020-q015",
     ]),
     "06-abruption": ("태반조기박리", [
         "gendev2-06-2025-q088", "gendev2-06-2022-q057", "gendev2-06-2021-q088",
-        "gendev2-06-2019-note-q056", "gendev2-06-2017-note-q021",
-    ]),
-    "06-early-pregnancy": ("초기임신 출혈·임신위치불명", [
-        "gendev2-06-2020-q019", "gendev2-06-2020-q020",
+        "gendev2-06-2019-note-q056", "gendev2-06-2017-note-q021", "gendev2-10-2020-q016",
     ]),
     "07-preeclampsia-mechanism": ("전자간증 병태생리", [
         "gendev2-07-2025-q053", "gendev2-07-2021-q080", "gendev2-07-2020-q014",
@@ -53,15 +50,12 @@ MANUAL_GROUPS = {
     ]),
     "10-pul-ectopic": ("임신위치불명·자궁외임신", [
         "gendev2-10-2025-q003", "gendev2-10-2023-q086",
-        "gendev2-10-2022-q004", "gendev2-10-2021-q010",
+        "gendev2-10-2022-q004", "gendev2-10-2021-q010", "gendev2-06-2020-q020",
     ]),
     "10-pregnancy-loss": ("초기임신 출혈·유산", [
         "gendev2-10-2025-q004", "gendev2-10-2023-q066",
         "gendev2-10-2022-q006", "gendev2-10-2021-q009",
-        "gendev2-10-2019-note-q037", "gendev2-10-2019-note-q029",
-    ]),
-    "10-antepartum-bleeding": ("임신후반기 출혈(오분류 의심)", [
-        "gendev2-10-2020-q015", "gendev2-10-2020-q016",
+        "gendev2-10-2019-note-q037", "gendev2-10-2019-note-q029", "gendev2-06-2020-q019",
     ]),
 }
 
@@ -93,8 +87,35 @@ def union(parent: dict[str, str], a: str, b: str) -> None:
         parent[rb] = ra
 
 
+def reclassify_suspected_questions(payload: dict) -> list[dict]:
+    """`내용상 NN강`이 명시된 오분류 의심 문항을 실제 강의로 옮긴다."""
+    lectures = {lecture["number"]: lecture for lecture in payload["lectures"]}
+    moved = []
+    for question in payload["questions"]:
+        status = question.get("classificationStatus", "")
+        match = re.search(r"내용상\s*(\d{1,2})강", status)
+        if not match:
+            continue
+        target = match.group(1).zfill(2)
+        if target not in lectures:
+            raise SystemExit(f"{question['id']}: target lecture missing {target}")
+        old = question["lectureNumber"]
+        if old == target:
+            continue
+        lecture = lectures[target]
+        question["lectureNumber"] = target
+        question["lectureTitle"] = lecture["title"]
+        question["professor2026"] = lecture.get("professors", {}).get("2026", "")
+        if question.get("sourceKind") not in {"2026-predicted", "lecture-practice", "lecture-demo"}:
+            question["importance"] = "high" if question.get("professorAtExam") == question["professor2026"] else "normal"
+        question["classificationStatus"] = f"오분류 재배치 완료: 원본 {old}강 → 내용상 {target}강"
+        moved.append({"id": question["id"], "from": old, "to": target})
+    return moved
+
+
 def main() -> None:
     payload = json.loads(DATA.read_text(encoding="utf-8"))
+    moved = reclassify_suspected_questions(payload)
     questions = payload["questions"]
     by_id = {q["id"]: q for q in questions}
     parent = {q["id"]: q["id"] for q in questions}
@@ -166,9 +187,12 @@ def main() -> None:
             by_id[qid]["studyOrder"] = order
 
     candidates.sort(key=lambda x: (-x["score"], x["lecture"], x["a"], x["b"]))
-    REPORT.write_text(json.dumps({"groups": groups, "candidates": candidates}, ensure_ascii=False, indent=2), encoding="utf-8")
+    remaining_suspicions = [q["id"] for q in questions if "오분류 의심" in q.get("classificationStatus", "")]
+    if remaining_suspicions:
+        raise SystemExit(f"unresolved classification suspicions: {remaining_suspicions}")
+    REPORT.write_text(json.dumps({"reclassified": moved, "groups": groups, "candidates": candidates}, ensure_ascii=False, indent=2), encoding="utf-8")
     DATA.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"SIMILARITY_GROUPS_APPLIED lectures={len(by_lecture)} groups={len(groups)} grouped_questions={sum(len(g['members']) for g in groups)} candidates={len(candidates)}")
+    print(f"SIMILARITY_GROUPS_APPLIED lectures={len(by_lecture)} moved={len(moved)} groups={len(groups)} grouped_questions={sum(len(g['members']) for g in groups)} candidates={len(candidates)}")
 
 
 if __name__ == "__main__":

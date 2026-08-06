@@ -85,8 +85,8 @@ def main() -> None:
             fail(f"{qid}: 전체 문항 출처 누락", errors)
         numeric_text = q.get("stem", "") + " " + " ".join(q.get("choices", []))
         lecture = q.get("lectureNumber", "")
-        audited_01_10 = lecture.isdigit() and 1 <= int(lecture) <= 10
-        if audited_01_10:
+        audited_01_13 = lecture.isdigit() and 1 <= int(lecture) <= 13
+        if audited_01_13:
             review = exp.get("numericReview") or {}
             if review.get("status") not in {"applicable", "not-applicable"}:
                 fail(f"{qid}: 수치 적용 여부 검수 누락", errors)
@@ -96,8 +96,8 @@ def main() -> None:
                     fail(f"{qid}: 적용 대상 수치 기준 누락", errors)
             elif exp.get("numericReference"):
                 fail(f"{qid}: 수치 비적용 문항에 수치 기준이 남음", errors)
-            if q.get("explanationReviewStatus") != "manual-lecture-choice-numeric-audit":
-                fail(f"{qid}: 1~10강 수동 재검수 상태 누락", errors)
+            if q.get("explanationReviewStatus") != "manual-choice-independent-audit-01-13":
+                fail(f"{qid}: 1~13강 독립 선지 재검수 상태 누락", errors)
         elif any(char.isdigit() for char in numeric_text):
             numeric_questions.append(q)
             if not exp.get("numericReference"):
@@ -119,12 +119,21 @@ def main() -> None:
         fail(f"1~20강 동일 개념복습 재사용 {len(duplicate_reviews)}개", errors)
     choice_explanations = [text for q in audited for text in q.get("explanation", {}).get("choiceExplanations", [])]
     banned_review_phrases = ("결정 단서와 맞지 않는다", "관련되지 않는다", "구분해야 한다", "사례를 그 원칙에 대입해", "정답 조건과 맞지")
-    reviewed_01_10 = [q for q in questions if q.get("lectureNumber", "").isdigit() and 1 <= int(q["lectureNumber"]) <= 10]
-    for q in reviewed_01_10:
+    reviewed_01_13 = [q for q in questions if q.get("lectureNumber", "").isdigit() and 1 <= int(q["lectureNumber"]) <= 13]
+    for q in reviewed_01_13:
         for text in q.get("explanation", {}).get("choiceExplanations", []):
             for phrase in banned_review_phrases:
                 if phrase in text:
                     fail(f"{q['id']}: 금지된 빈 선지 해설 문구 '{phrase}'", errors)
+        explanations = q.get("explanation", {}).get("choiceExplanations", [])
+        if len(explanations) != len(set(explanations)):
+            fail(f"{q['id']}: 문항 안에서 선지 해설 중복", errors)
+        for index, text in enumerate(explanations):
+            for other_index, other in enumerate(q.get("choices", [])):
+                if index != other_index and len(other.strip()) >= 12 and other.strip() in text:
+                    fail(f"{q['id']}: {index + 1}번 해설이 {other_index + 1}번 선지를 설명함", errors)
+        if "오분류 의심" in q.get("classificationStatus", ""):
+            fail(f"{q['id']}: 오분류 의심 문항 미재배치", errors)
     html_ids = set(re.findall(r'id="([^"]+)"', html))
     grouped = [q for q in questions if q.get("similarGroupId")]
     groups: dict[str, list[dict]] = {}
@@ -147,7 +156,7 @@ def main() -> None:
         if sorted(orders) != list(range(1, len(orders) + 1)):
             fail(f"{lecture}강: studyOrder 중복/누락", errors)
 
-    required_ids = {"login", "attendance", "lecture-list", "question-card", "discussion-list", "review-view", "review-list", "concept-view", "concept-list", "sync-status", "progress-view", "progress-summary", "progress-list", "professors-view", "professors-table"}
+    required_ids = {"login", "attendance", "lecture-list", "question-card", "question-search", "same-professor-only", "question-filter-count", "discussion-list", "review-view", "review-list", "concept-view", "concept-list", "sync-status", "progress-view", "progress-summary", "progress-list", "professors-view", "professors-table"}
     missing_ids = sorted(required_ids - html_ids)
     if missing_ids:
         fail(f"HTML 필수 대상 누락: {missing_ids}", errors)
