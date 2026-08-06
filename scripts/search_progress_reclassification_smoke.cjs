@@ -22,16 +22,21 @@ const chromePath = process.env.CHROME_PATH || "C:\\Program Files\\Google\\Chrome
     if (payload.questions.some(q => (q.classificationStatus || "").includes("오분류 의심"))) throw new Error("오분류 의심 상태 잔존");
 
     const responses = {};
-    for (const [lecture, corrects] of [["01", [true, true, true]], ["02", [true, false]], ["03", [false, false]]]) {
+    for (const [lecture, corrects] of [["01", [true, true, true]], ["02", [true, false]], ["03", [false, false]], ["04", [true, true, false]]]) {
       payload.questions.filter(q => q.lectureNumber === lecture).slice(0, corrects.length).forEach((q, i) => {
         responses[q.id] = {attempts: 1, wrong: corrects[i] ? 0 : 1, lastCorrect: corrects[i], selected: corrects[i] ? q.answers : [q.answers[0] === 1 ? 2 : 1], revealed: true, lastAt: new Date().toISOString()};
       });
     }
-    await page.route("**/api/progress*", route => route.fulfill({status: 200, contentType: "application/json", body: JSON.stringify({responses})}));
+    await page.route("**/api/progress*", route => route.fulfill({status: 200, contentType: "application/json", body: JSON.stringify({responses, lectureNotes: {"01": {text: "철분·생리", updatedAt: "2026-08-06T00:00:00.000Z"}}})}));
     await page.route("**/api/discussions*", route => route.fulfill({status: 200, contentType: "application/json", body: "[]"}));
     await page.goto(base, {waitUntil: "networkidle"});
     await page.fill("#attendance", "613");
     await page.click('#login-form button[type="submit"]');
+    await page.waitForFunction(() => document.querySelector('[data-lecture-note="01"]')?.value === "철분·생리");
+    if (await page.locator('[data-lecture-note="01"]').inputValue() !== "철분·생리") throw new Error("강의 메모 동기화 표시 실패");
+    await page.fill('[data-lecture-note="01"]', "짧은 강의 메모");
+    const stored = await page.evaluate(() => JSON.parse(localStorage.getItem("gendev2:attendance:613:v1")));
+    if (stored.lectureNotes?.["01"]?.text !== "짧은 강의 메모") throw new Error("강의 메모 출석번호별 저장 실패");
 
     await page.fill("#question-search", "Marfan");
     if (Number((await page.locator("#question-filter-count").innerText()).replace(/\D/g, "")) < 1) throw new Error("전체 문제 검색 실패");
@@ -45,17 +50,18 @@ const chromePath = process.env.CHROME_PATH || "C:\\Program Files\\Google\\Chrome
     await page.uncheck("#same-professor-only");
 
     await page.click('[data-mode="progress"]');
-    const colors = await page.locator(".progress-track > span").evaluateAll(nodes => nodes.slice(0, 3).map(node => getComputedStyle(node).backgroundColor));
+    const colors = await page.locator(".progress-track > span").evaluateAll(nodes => nodes.slice(0, 4).map(node => getComputedStyle(node).backgroundColor));
     const rgb = color => color.match(/\d+/g).slice(0, 3).map(Number);
-    const [green, yellow, red] = colors.map(rgb);
+    const [green, fiftyWrong, red, yellow] = colors.map(rgb);
     if (!(green[1] > green[0] && green[1] > green[2])) throw new Error(`고정답률 초록 실패: ${colors[0]}`);
-    if (!(Math.abs(yellow[0] - yellow[1]) < 15 && yellow[0] > yellow[2])) throw new Error(`중간 정답률 노랑 실패: ${colors[1]}`);
+    if (!(fiftyWrong[0] > fiftyWrong[1] && fiftyWrong[0] > fiftyWrong[2])) throw new Error(`오답률 50% 빨강 실패: ${colors[1]}`);
     if (!(red[0] > red[1] && red[0] > red[2])) throw new Error(`고오답률 빨강 실패: ${colors[2]}`);
+    if (!(yellow[0] > 190 && yellow[1] > 160 && yellow[2] < 150)) throw new Error(`밝은 중간 노랑 실패: ${colors[3]}`);
     await page.screenshot({path: "work/progress-accuracy-gradient-desktop.png", fullPage: true});
     await page.setViewportSize({width: 390, height: 844});
     await page.click('[data-mode="solve"]');
     await page.screenshot({path: "work/question-search-mobile.png", fullPage: true});
-    console.log(`SEARCH_PROGRESS_RECLASSIFICATION_PASS search=pass sameProfessor=${sameActual} gradient=red-yellow-green moved=4 mobile=pass`);
+    console.log(`SEARCH_PROGRESS_RECLASSIFICATION_PASS search=pass sameProfessor=${sameActual} lectureNote=sync+local gradient=bright-red-yellow-green moved=4 mobile=pass`);
   } finally {
     await browser.close();
   }

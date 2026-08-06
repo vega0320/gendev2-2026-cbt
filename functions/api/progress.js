@@ -37,18 +37,29 @@ function normalizeResponses(input) {
   return output;
 }
 
+function normalizeLectureNotes(input) {
+  const output = {};
+  if (!input || typeof input !== "object" || Array.isArray(input)) return output;
+  for (const [lectureNumber, raw] of Object.entries(input).slice(0, 50)) {
+    if (!/^\d{2}(?:-[12])?$/.test(lectureNumber) || !raw || typeof raw !== "object" || Array.isArray(raw)) continue;
+    const text = typeof raw.text === "string" ? raw.text.trim().slice(0, 80) : "";
+    if (text) output[lectureNumber] = {text, updatedAt: safeDate(raw.updatedAt)};
+  }
+  return output;
+}
+
 export async function onRequestGet(context) {
   if (!context.env.DB) return json({error: "progress database is not configured"}, 503);
   const attendance = new URL(context.request.url).searchParams.get("attendance") || "";
   if (!validAttendance(attendance)) return json({error: "invalid attendance"}, 400);
   const key = await attendanceHash(String(Number(attendance)), context.env);
   const row = await context.env.DB.prepare("SELECT payload, updated_at AS updatedAt FROM progress WHERE attendance_hash = ?").bind(key).first();
-  if (!row) return json({responses: {}, updatedAt: null});
+  if (!row) return json({responses: {}, lectureNotes: {}, updatedAt: null});
   try {
     const payload = JSON.parse(row.payload);
-    return json({responses: normalizeResponses(payload.responses), updatedAt: row.updatedAt});
+    return json({responses: normalizeResponses(payload.responses), lectureNotes: normalizeLectureNotes(payload.lectureNotes), updatedAt: row.updatedAt});
   } catch {
-    return json({responses: {}, updatedAt: row.updatedAt});
+    return json({responses: {}, lectureNotes: {}, updatedAt: row.updatedAt});
   }
 }
 
@@ -59,11 +70,12 @@ export async function onRequestPost(context) {
   const attendance = String(input.attendance || "");
   if (!validAttendance(attendance)) return json({error: "invalid attendance"}, 400);
   const responses = normalizeResponses(input.responses);
-  const payload = JSON.stringify({responses});
+  const lectureNotes = normalizeLectureNotes(input.lectureNotes);
+  const payload = JSON.stringify({responses, lectureNotes});
   if (payload.length > 180000) return json({error: "progress payload too large"}, 413);
   const key = await attendanceHash(String(Number(attendance)), context.env);
   await context.env.DB.prepare(`INSERT INTO progress (attendance_hash, payload, updated_at)
     VALUES (?, ?, CURRENT_TIMESTAMP)
     ON CONFLICT(attendance_hash) DO UPDATE SET payload = excluded.payload, updated_at = CURRENT_TIMESTAMP`).bind(key, payload).run();
-  return json({ok: true, responses, updatedAt: new Date().toISOString()});
+  return json({ok: true, responses, lectureNotes, updatedAt: new Date().toISOString()});
 }

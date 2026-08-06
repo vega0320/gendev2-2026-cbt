@@ -40,7 +40,10 @@ const { chromium } = require("playwright");
     await page.setViewportSize({ width: 390, height: 844 });
     const bodyFits = await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
     const tableScrolls = await page.locator(".professors-table-wrap").evaluate(el => el.scrollWidth > el.clientWidth);
-    if (!bodyFits || !tableScrolls) throw new Error("모바일 교수 표 가로 스크롤 오류");
+    if (!bodyFits || !tableScrolls) {
+      const wide = await page.evaluate(() => [...document.querySelectorAll("body *")].filter(el => el.getBoundingClientRect().right > innerWidth + 1).slice(0, 8).map(el => `${el.tagName}.${el.className}:${Math.round(el.getBoundingClientRect().right)}`));
+      throw new Error(`모바일 교수 표 가로 스크롤 오류 bodyFits=${bodyFits} tableScrolls=${tableScrolls} wide=${wide.join("|")}`);
+    }
     console.log("SIMILARITY_PROFESSORS_BROWSER_PASS groups_contiguous=pass professor_table=pass mobile=pass");
   } finally {
     await browser.close();

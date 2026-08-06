@@ -16,15 +16,22 @@ const chromePath = process.env.CHROME_PATH || "C:\\Program Files\\Google\\Chrome
     const choiceExplanations = audited.flatMap(q => q.explanation?.choiceExplanations || []);
     if (new Set(judgments).size !== audited.length) throw new Error("핵심 해설 중복 잔존");
     if (new Set(reviews).size !== audited.length) throw new Error("개념 복습 중복 잔존");
-    const reviewed = audited.filter(q => Number(q.lectureNumber) <= 13);
+    const reviewed = audited;
     const banned = ["결정 단서와 맞지 않는다", "관련되지 않는다", "구분해야 한다", "사례를 그 원칙에 대입해"];
     for (const q of reviewed) {
-      if (q.explanationReviewStatus !== "manual-choice-independent-audit-01-13") throw new Error(`${q.id} 독립 선지 재검수 상태 누락`);
+      const expectedMarker = Number(q.lectureNumber) <= 13 ? "manual-choice-independent-audit-01-13" : "manual-choice-independent-audit-14-20";
+      if (q.explanationReviewStatus !== expectedMarker) throw new Error(`${q.id} 독립 선지 재검수 상태 누락`);
       if (!["applicable", "not-applicable"].includes(q.explanation?.numericReview?.status)) throw new Error(`${q.id} 수치 적용 검수 누락`);
       if (q.explanation.numericReview.status === "applicable" && !(q.explanation.numericReference || []).length) throw new Error(`${q.id} 수치 기준 누락`);
       for (const text of q.explanation?.choiceExplanations || []) {
         if (banned.some(phrase => text.includes(phrase))) throw new Error(`${q.id} 빈 선지 해설 문구 잔존`);
       }
+      const explanations = q.explanation?.choiceExplanations || [];
+      if (new Set(explanations).size !== explanations.length) throw new Error(`${q.id} 문항 내 선지 해설 중복`);
+      explanations.forEach((text,index)=>{
+        const body=text.split(". ").slice(1).join(". ");
+        q.choices.forEach((choice,otherIndex)=>{if(index!==otherIndex&&choice.trim().length>=12&&body.includes(choice.trim()))throw new Error(`${q.id} ${index+1}번 해설에 ${otherIndex+1}번 선지 혼입`);});
+      });
     }
 
     const lecture7 = payload.questions.filter(q => q.lectureNumber === "07").sort((a,b) => a.studyOrder-b.studyOrder);

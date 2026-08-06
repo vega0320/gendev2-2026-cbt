@@ -27,7 +27,8 @@ def main() -> None:
         text = question.get("stem", "") + " " + " ".join(question.get("choices", []))
         lecture = question.get("lectureNumber", "")
         audited_01_13 = lecture.isdigit() and 1 <= int(lecture) <= 13
-        if audited_01_13:
+        audited_14_20 = lecture.isdigit() and 14 <= int(lecture) <= 20
+        if audited_01_13 or audited_14_20:
             review = exp.get("numericReview") or {}
             if review.get("status") not in {"applicable", "not-applicable"}:
                 errors.append(f"{qid}: numeric review status missing")
@@ -38,7 +39,10 @@ def main() -> None:
             elif exp.get("numericReference"):
                 errors.append(f"{qid}: non-applicable question has numeric reference")
             if question.get("explanationReviewStatus") != "manual-choice-independent-audit-01-13":
-                errors.append(f"{qid}: lecture 1-13 independent choice review marker missing")
+                if audited_01_13:
+                    errors.append(f"{qid}: lecture 1-13 independent choice review marker missing")
+            if audited_14_20 and question.get("explanationReviewStatus") != "manual-choice-independent-audit-14-20":
+                errors.append(f"{qid}: lecture 14-20 independent choice review marker missing")
         elif any(char.isdigit() for char in text):
             numeric.append(question)
             if not exp.get("numericReference"):
@@ -60,12 +64,12 @@ def main() -> None:
             errors.append(f"banned generic phrase remains: {phrase}")
     reviewed_choices = [
         text for q in questions
-        if q.get("lectureNumber", "").isdigit() and 1 <= int(q["lectureNumber"]) <= 13
+        if q.get("lectureNumber", "").isdigit() and 1 <= int(q["lectureNumber"]) <= 20
         for text in q.get("explanation", {}).get("choiceExplanations", [])
     ]
     for phrase in ("결정 단서와 맞지 않는다", "관련되지 않는다", "구분해야 한다", "사례를 그 원칙에 대입해", "정답 조건과 맞지"):
         if any(phrase in text for text in reviewed_choices):
-            errors.append(f"lecture 1-13 banned choice phrase remains: {phrase}")
+            errors.append(f"lecture 1-20 banned choice phrase remains: {phrase}")
     predicted = [q for q in questions if q.get("sourceKind") == "2026-predicted"]
     judgments = [q.get("explanation", {}).get("keyJudgment", "") for q in questions]
     print(
