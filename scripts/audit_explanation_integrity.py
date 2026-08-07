@@ -6,6 +6,8 @@ import json
 import re
 from pathlib import Path
 
+from enrich_guideline_sections import DX_RE, TX_RE
+
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / "data" / "questions.json"
@@ -20,6 +22,13 @@ BANNED = (
     "마지막으로 각 정답 후보의 독립 근거를 확인한다",
     "문제의 내용에 따라",
     "정답 후보를 선택한다",
+    "핵심 생리·임상 단서를 먼저 찾는다",
+    "나머지 선지는 맞아지는 조건과 비교한다",
+    "고신호 단서를 묶는다",
+    "먼저 요구가",
+    "증례의 고신호 단서를 묶는다",
+    "각 선지를 같은 기준으로 대조하면",
+    "문항의 요구와 정답표를 함께 만족한다",
 )
 
 
@@ -28,9 +37,6 @@ def main() -> None:
     failures: list[str] = []
     reviewed = 0
     for q in payload["questions"]:
-        lecture = q.get("lectureNumber", "")
-        if not lecture.isdigit() or int(lecture) > 32:
-            continue
         reviewed += 1
         exp = q.get("explanation") or {}
         blob = json.dumps(exp, ensure_ascii=False)
@@ -46,6 +52,14 @@ def main() -> None:
             choice = re.sub(r"\s+", " ", choice).strip()
             if len(choice) >= 18 and choice in review:
                 failures.append(f"{q['id']}: choice copied into conceptReview")
+        if DX_RE.search(q.get("stem", "")) and len(exp.get("diagnosticCriteria") or []) < 2:
+            failures.append(f"{q['id']}: diagnosticCriteria<2")
+        if TX_RE.search(q.get("stem", "")):
+            if len(exp.get("treatmentGuideline") or []) < 3:
+                failures.append(f"{q['id']}: treatmentGuideline<3")
+            visual = exp.get("diagnosticVisual") or {}
+            if len(visual.get("steps") or []) < 3:
+                failures.append(f"{q['id']}: treatment flowchart<3")
 
     regressions = {
         "gendev2-09-2023-q016": (4, r"에스트로겐|복합호르몬|MEC|혈전", r"\bACE\b"),

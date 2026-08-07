@@ -16,6 +16,25 @@
   color: #294f7e;
 }
 
+.treatment-guideline {
+  margin: 16px 0;
+  padding: 16px;
+  border-left: 4px solid #7a5bc7;
+  border-radius: 10px;
+  background: #f6f2ff;
+}
+
+.treatment-guideline h3 {
+  margin-top: 0;
+  color: #573c9a;
+}
+
+.treatment-guideline ol {
+  margin: 0;
+  padding-left: 22px;
+  line-height: 1.7;
+}
+
 .numeric-reference ul,
 .diagnostic-criteria ul {
   margin: 0;

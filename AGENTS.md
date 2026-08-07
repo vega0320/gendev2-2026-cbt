@@ -170,6 +170,15 @@
 17. `한 단계씩 풀이`에는 `정답 후보를 확인한다`, `문제 내용에 따라 고른다`, `선지에 대입한다`처럼
     풀이 행동만 지시하는 문장을 넣지 않는다. 자동 보강기는 정답 선지의 검수된 의학 사실만 붙이며,
     각 단계는 읽은 뒤 다른 문항에도 적용할 수 있는 판별 기준을 하나 이상 제공해야 한다.
+18. 질환을 진단하는 문항은 `diagnosticCriteria`에 최소 두 개의 독립적인 판별 기준을 적는다. 단순 질환명
+    반복이 아니라 정의·절단값·필수/배제 조건·검사 순서를 구분하고, 기준이 없는 병리 형태 문항은 형태학적
+    진단 근거와 감별점을 각각 적는다.
+19. 치료를 묻는 문항은 `treatmentGuideline`에 최소 세 단계로 초기 안정화 또는 1차 치료, 반응 평가,
+    실패·고위험 시 단계상승과 중요한 금기를 적는다. 치료 순서가 있는 경우 같은 내용으로 자체 제작한
+    HTML/CSS 흐름도를 함께 표시한다.
+20. OpenEvidence는 최신 지침 후보를 찾는 탐색 도구로만 사용한다. 최종 진단 절단값·치료 순서·허가 상태는
+    공식 학회·정부기관·규제기관 또는 원 논문에서 재확인한다. OpenEvidence나 유료 지침의 그림을 복제하지
+    않고, 확인한 내용을 바탕으로 저작권에 저촉되지 않는 자체 흐름도를 만든다.
 
 ## 배포 업데이트와 풀이기록 무손실 규칙
 
@@ -217,11 +226,14 @@
 6. 14~20강 독립 선지 검수: `scripts/review_lectures_14_20.py`
 7. 21~26강 독립 선지 검수: `scripts/review_lectures_21_26.py`
 8. 27~32강 독립 선지 검수: `scripts/review_lectures_27_32.py`
-9. 전체 선지 원문 반복 제거: `scripts/remove_choice_echoes.py`
-10. 1~32강 의미 중복 검사와 전체 원문 반복 검사
-11. `scripts/prepare_site.py`
-12. 자동검사와 실제 브라우저 검사
-13. GitHub main push 후 Cloudflare Pages 배포
+9. 33~41강 독립 선지 검수: `scripts/review_lectures_33_41.py`
+10. 전체 풀이 상투문구 제거: `scripts/repair_reasoning_meta_language.py`
+11. 진단기준·치료지침·자체 흐름도 보강: `scripts/enrich_guideline_sections.py`
+12. 전체 선지 원문 반복 제거: `scripts/remove_choice_echoes.py`
+13. 전체 문항 의미 중복·상투문구·진단·치료 구조 검사
+14. `scripts/prepare_site.py`
+15. 자동검사와 실제 브라우저 검사
+16. GitHub main push 후 Cloudflare Pages 배포
 
 뒤 단계가 앞 단계의 수동 해설을 덮어쓰지 않게 한다. 배치 스크립트는 반복 실행해도 같은 결과가 나와야 한다.
 
@@ -233,6 +245,10 @@ python scripts/review_lectures_01_13.py
 python scripts/review_lectures_14_20.py
 python scripts/review_lectures_21_26.py
 python scripts/review_lectures_27_32.py
+python scripts/review_lectures_33_41.py
+python scripts/repair_reasoning_meta_language.py
+python scripts/enrich_guideline_sections.py
+python scripts/audit_explanation_integrity.py
 python scripts/remove_choice_echoes.py
 python scripts/audit_choice_echoes.py
 python scripts/audit_choice_semantic_overlap.py --data data/questions.json --fail

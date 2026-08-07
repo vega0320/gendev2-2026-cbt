@@ -3,6 +3,7 @@ from __future__ import annotations
 """한 단계씩 풀이에서 정답 선택을 지시할 뿐인 메타 문구를 제거한다."""
 
 import json
+import re
 from pathlib import Path
 
 
@@ -31,8 +32,29 @@ def main() -> None:
     for question in payload["questions"]:
         explanation = question.get("explanation") or {}
         steps = explanation.get("reasoningSteps") or []
-        updated: list[str] = []
         question_changed = False
+        if (
+            any("핵심 생리·임상 단서를 먼저 찾는다" in step for step in steps)
+            and any("나머지 선지는 맞아지는 조건과 비교한다" in step for step in steps)
+        ):
+            useful = [
+                step for step in steps
+                if "핵심 생리·임상 단서를 먼저 찾는다" not in step
+                and "나머지 선지는 맞아지는 조건과 비교한다" not in step
+            ]
+            answers = set(question.get("answers") or [])
+            differentials = []
+            for index, text in enumerate(explanation.get("choiceExplanations") or [], 1):
+                if index in answers:
+                    continue
+                fact = re.sub(r"^(정답|오답|부적절하다|적절하다)[.:]?\s*", "", text.strip())
+                if fact and fact not in useful and fact not in differentials:
+                    differentials.append(fact)
+            steps = (useful[:1] + differentials[:2] + useful[1:])[:5]
+            explanation["reasoningSteps"] = steps
+            replaced_steps += 2
+            question_changed = True
+        updated: list[str] = []
         for step in steps:
             new_step = REPLACEMENTS.get(step, step)
             if new_step != step:

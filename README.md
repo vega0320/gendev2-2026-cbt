@@ -11,6 +11,8 @@
 - 현재 오답·모름 문항에서 복습 개념을 자동 추출해 묶어 보기
 - 문제·선지는 CBT 형식으로 표시하고 표·사진은 원본 이미지로 연결
 - 답 제출 뒤 각 선지 바로 아래에 해당 선지 해설 표시
+- 정오와 관계없이 각 문항을 즉시 다시 풀되 누적 시도·오답·모름·메모는 보존
+- 질환 진단 문항의 명시적 진단 기준과 치료 문항의 단계별 가이드라인·자체 제작 흐름도
 - 생성발2 및 기존 임추·국시 문제은행의 비슷한 문제 연결
 - 문제별 실시간 오류토의
 - 2026년 강의에서 보여 준 비출제 예시를 실제 기출과 구분
@@ -29,6 +31,8 @@ python scripts/review_lecture09_evidence.py
 python scripts/repair_explanation_integrity.py
 python scripts/enhance_reasoning_steps.py
 python scripts/repair_reasoning_meta_language.py
+python scripts/review_lectures_33_41.py
+python scripts/enrich_guideline_sections.py
 python scripts/audit_explanation_integrity.py
 python scripts/prepare_site.py
 python scripts/validate_site.py
@@ -39,6 +43,8 @@ node scripts/browser_smoke.cjs
 node scripts/review_smoke.cjs
 node scripts/explanation_quality_smoke.cjs
 node scripts/update_persistence_smoke.cjs
+node scripts/retry_current_smoke.cjs
+node scripts/guideline_explanation_smoke.cjs
 ```
 
 ## 자료 및 근거

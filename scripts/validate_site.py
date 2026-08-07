@@ -89,6 +89,7 @@ def main() -> None:
         audited_14_20 = lecture.isdigit() and 14 <= int(lecture) <= 20
         audited_21_26 = lecture.isdigit() and 21 <= int(lecture) <= 26
         audited_27_32 = lecture.isdigit() and 27 <= int(lecture) <= 32
+        audited_33_41 = lecture in {"33", "34", "35", "36", "37", "38", "39", "40-1", "40-2", "41"}
         if audited_01_13 or audited_14_20:
             review = exp.get("numericReview") or {}
             if review.get("status") not in {"applicable", "not-applicable"}:
@@ -104,11 +105,21 @@ def main() -> None:
                     fail(f"{qid}: 1~13강 독립 선지 재검수 상태 누락", errors)
             if audited_14_20 and q.get("explanationReviewStatus") != "manual-choice-independent-audit-14-20":
                 fail(f"{qid}: 14~20강 독립 선지 재검수 상태 누락", errors)
-        elif audited_21_26 or audited_27_32:
-            expected = "manual-choice-independent-audit-21-26" if audited_21_26 else "manual-choice-independent-audit-27-32"
+        elif audited_21_26 or audited_27_32 or audited_33_41:
+            expected = "manual-choice-independent-audit-21-26" if audited_21_26 else "manual-choice-independent-audit-27-32" if audited_27_32 else "manual-choice-independent-audit-33-41"
             if q.get("explanationReviewStatus") != expected:
-                fail(f"{qid}: 21~32강 독립 선지 재검수 상태 누락", errors)
-            if any(char.isdigit() for char in numeric_text):
+                fail(f"{qid}: 21~41강 독립 선지 재검수 상태 누락", errors)
+            if audited_33_41:
+                review = exp.get("numericReview") or {}
+                if review.get("status") not in {"applicable", "not-applicable"}:
+                    fail(f"{qid}: 수치 적용 여부 검수 누락", errors)
+                if review.get("status") == "applicable":
+                    numeric_questions.append(q)
+                    if not exp.get("numericReference"):
+                        fail(f"{qid}: 적용 대상 수치 기준 누락", errors)
+                elif exp.get("numericReference"):
+                    fail(f"{qid}: 수치 비적용 문항에 수치 기준이 남음", errors)
+            elif any(char.isdigit() for char in numeric_text):
                 numeric_questions.append(q)
                 if not (exp.get("numericReference") or exp.get("diagnosticCriteria")):
                     fail(f"{qid}: 수치 문항 진단·수치 기준 누락", errors)

@@ -30,6 +30,7 @@ def main() -> None:
         audited_14_20 = lecture.isdigit() and 14 <= int(lecture) <= 20
         audited_21_26 = lecture.isdigit() and 21 <= int(lecture) <= 26
         audited_27_32 = lecture.isdigit() and 27 <= int(lecture) <= 32
+        audited_33_41 = lecture in {"33", "34", "35", "36", "37", "38", "39", "40-1", "40-2", "41"}
         if audited_01_13 or audited_14_20:
             review = exp.get("numericReview") or {}
             if review.get("status") not in {"applicable", "not-applicable"}:
@@ -47,13 +48,24 @@ def main() -> None:
                 errors.append(f"{qid}: lecture 14-20 independent choice review marker missing")
             if question.get("semanticChoiceReviewStatus") != "manual-semantic-audit-2026-08-06":
                 errors.append(f"{qid}: lecture 1-20 semantic choice review marker missing")
-        elif audited_21_26 or audited_27_32:
-            expected = "manual-choice-independent-audit-21-26" if audited_21_26 else "manual-choice-independent-audit-27-32"
+        elif audited_21_26 or audited_27_32 or audited_33_41:
+            expected = "manual-choice-independent-audit-21-26" if audited_21_26 else "manual-choice-independent-audit-27-32" if audited_27_32 else "manual-choice-independent-audit-33-41"
             if question.get("explanationReviewStatus") != expected:
-                errors.append(f"{qid}: lecture 21-32 independent choice review marker missing")
-            if question.get("semanticChoiceReviewStatus") != "manual-semantic-audit-2026-08-06":
-                errors.append(f"{qid}: lecture 21-32 semantic choice review marker missing")
-            if any(char.isdigit() for char in text):
+                errors.append(f"{qid}: lecture 21-41 independent choice review marker missing")
+            semantic_expected = "manual-semantic-audit-2026-08-07" if audited_33_41 else "manual-semantic-audit-2026-08-06"
+            if question.get("semanticChoiceReviewStatus") != semantic_expected:
+                errors.append(f"{qid}: lecture 21-41 semantic choice review marker missing")
+            if audited_33_41:
+                review = exp.get("numericReview") or {}
+                if review.get("status") not in {"applicable", "not-applicable"}:
+                    errors.append(f"{qid}: numeric review status missing")
+                if review.get("status") == "applicable":
+                    numeric.append(question)
+                    if not exp.get("numericReference"):
+                        errors.append(f"{qid}: applicable numeric reference missing")
+                elif exp.get("numericReference"):
+                    errors.append(f"{qid}: non-applicable question has numeric reference")
+            elif any(char.isdigit() for char in text):
                 numeric.append(question)
                 if not exp.get("numericReference") and not exp.get("diagnosticCriteria"):
                     errors.append(f"{qid}: numeric/diagnostic reference missing")
