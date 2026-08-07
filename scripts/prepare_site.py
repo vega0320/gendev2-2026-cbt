@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 from pathlib import Path
 
 
@@ -10,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "data" / "questions.json"
 OUTPUT = ROOT / "site" / "data" / "questions.json"
 VERSION_OUTPUT = ROOT / "site" / "version.json"
+INDEX_OUTPUT = ROOT / "site" / "index.html"
 
 
 PILOT_EXPLANATIONS = {
@@ -215,6 +217,15 @@ def main() -> None:
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     data_hash = hashlib.sha256(OUTPUT.read_bytes()).hexdigest()[:16]
+    # Safari를 포함한 브라우저가 이전 app.js를 복원하지 않도록 실제 정적 자산 내용으로 URL을 지문화한다.
+    asset_hasher = hashlib.sha256()
+    for relative in ("site/app.js", "site/styles.css"):
+        asset_hasher.update((ROOT / relative).read_bytes())
+    asset_hash = asset_hasher.hexdigest()[:12]
+    index_html = INDEX_OUTPUT.read_text(encoding="utf-8")
+    index_html = re.sub(r"styles\.css(?:\?v=[0-9a-f]+)?", f"styles.css?v={asset_hash}", index_html)
+    index_html = re.sub(r"app\.js(?:\?v=[0-9a-f]+)?", f"app.js?v={asset_hash}", index_html)
+    INDEX_OUTPUT.write_text(index_html, encoding="utf-8")
     app_hasher = hashlib.sha256()
     for relative in ("site/app.js", "site/styles.css", "site/index.html"):
         app_hasher.update((ROOT / relative).read_bytes())
