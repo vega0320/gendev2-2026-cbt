@@ -22,11 +22,17 @@ const chromePath = process.env.CHROME_PATH || "C:\\Program Files\\Google\\Chrome
         throw new Error(`${q.id}: 선지별 해설 수 불일치`);
       }
       const text = await page.locator(".explanation-card").innerText();
-      if (!text.includes("한 단계씩 풀이") || !text.includes("본과 개념 복습")) throw new Error(`${q.id}: 해설 영역 누락`);
+      const separatedTreatment = q.explanation?.treatmentGuideline?.length && q.explanation?.showReasoningWithTreatment === false;
+      if (separatedTreatment) {
+        if (text.includes("한 단계씩 풀이") || !text.includes("치료 가이드라인")) throw new Error(`${q.id}: 치료 해설 중복 분리 실패`);
+      } else if (!text.includes("한 단계씩 풀이")) {
+        throw new Error(`${q.id}: 한 단계씩 풀이 누락`);
+      }
+      if (!text.includes("본과 개념 복습")) throw new Error(`${q.id}: 본과 개념 복습 누락`);
     }
     await page.screenshot({ path: "work/lecture5-desktop.png", fullPage: true });
     await page.setViewportSize({ width: 390, height: 844 });
     await page.screenshot({ path: "work/lecture5-mobile.png", fullPage: true });
-    console.log("LECTURE5_BROWSER_PASS representative=3 choices=pass reasoning=pass mobile=pass");
+    console.log("LECTURE5_BROWSER_PASS representative=3 choices=pass treatment_deduplicated=pass mobile=pass");
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exit(1); });

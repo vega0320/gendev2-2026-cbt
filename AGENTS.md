@@ -179,6 +179,11 @@
 20. OpenEvidence는 최신 지침 후보를 찾는 탐색 도구로만 사용한다. 최종 진단 절단값·치료 순서·허가 상태는
     공식 학회·정부기관·규제기관 또는 원 논문에서 재확인한다. OpenEvidence나 유료 지침의 그림을 복제하지
     않고, 확인한 내용을 바탕으로 저작권에 저촉되지 않는 자체 흐름도를 만든다.
+21. 치료 문항에서는 같은 처치 문장을 `한 단계씩 풀이`, 흐름도, 치료 가이드라인에 세 번 반복하지 않는다.
+    핵심 해설 뒤에 `초기 평가 → 적응증 판단 → 권고 처치 → 추적·단계 상승`의 상세 치료 가이드라인을 두고,
+    별도 흐름도가 실질적인 추가 정보를 주지 않으면 생략한다. 흐름도를 쓸 때는 짧은 분기만 표시한다.
+22. 치료 가이드라인 네 단계에는 적용 대상, 시행 시점·절단값, 1차 치료, 반응 실패 시 다음 처치와 중요한
+    금기 중 문항에 필요한 내용을 구체적으로 적는다. 기존 풀이 문장을 그대로 복사해 단계 이름만 붙이지 않는다.
 
 ## 배포 업데이트와 풀이기록 무손실 규칙
 
@@ -229,11 +234,12 @@
 9. 33~41강 독립 선지 검수: `scripts/review_lectures_33_41.py`
 10. 전체 풀이 상투문구 제거: `scripts/repair_reasoning_meta_language.py`
 11. 진단기준·치료지침·자체 흐름도 보강: `scripts/enrich_guideline_sections.py`
-12. 전체 선지 원문 반복 제거: `scripts/remove_choice_echoes.py`
-13. 전체 문항 의미 중복·상투문구·진단·치료 구조 검사
-14. `scripts/prepare_site.py`
-15. 자동검사와 실제 브라우저 검사
-16. GitHub main push 후 Cloudflare Pages 배포
+12. 증례 판단과 상세 치료 알고리듬 분리: `scripts/refine_treatment_explanations.py`
+13. 전체 선지 원문 반복 제거: `scripts/remove_choice_echoes.py`
+14. 전체 문항 의미 중복·상투문구·진단·치료 구조 검사
+15. `scripts/prepare_site.py`
+16. 자동검사와 실제 브라우저 검사
+17. GitHub main push 후 Cloudflare Pages 배포
 
 뒤 단계가 앞 단계의 수동 해설을 덮어쓰지 않게 한다. 배치 스크립트는 반복 실행해도 같은 결과가 나와야 한다.
 
@@ -248,6 +254,7 @@ python scripts/review_lectures_27_32.py
 python scripts/review_lectures_33_41.py
 python scripts/repair_reasoning_meta_language.py
 python scripts/enrich_guideline_sections.py
+python scripts/refine_treatment_explanations.py
 python scripts/audit_explanation_integrity.py
 python scripts/remove_choice_echoes.py
 python scripts/audit_choice_echoes.py

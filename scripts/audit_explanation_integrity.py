@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+from difflib import SequenceMatcher
 from pathlib import Path
 
 from enrich_guideline_sections import DX_RE, TX_RE
@@ -55,16 +56,38 @@ def main() -> None:
         if DX_RE.search(q.get("stem", "")) and len(exp.get("diagnosticCriteria") or []) < 2:
             failures.append(f"{q['id']}: diagnosticCriteria<2")
         if TX_RE.search(q.get("stem", "")):
-            if len(exp.get("treatmentGuideline") or []) < 3:
-                failures.append(f"{q['id']}: treatmentGuideline<3")
+            guide = exp.get("treatmentGuideline") or []
+            if len(guide) != 4:
+                failures.append(f"{q['id']}: treatmentGuideline!=4")
+            labels = ("초기 평가 —", "적응증 판단 —", "권고 처치 —", "추적·단계 상승 —")
+            for index, (item, label) in enumerate(zip(guide, labels), 1):
+                if not item.startswith(label) or len(item) < 22:
+                    failures.append(f"{q['id']}: treatment step {index} is not detailed/staged")
+                if re.search(r"(?:따라서\s*)?[①②③④⑤1-5].{0,80}정답", item):
+                    failures.append(f"{q['id']}: treatment step {index} contains test-answer language")
+            if sum(map(len, guide)) < 140:
+                failures.append(f"{q['id']}: treatment guideline total detail<140 chars")
+            bodies = [re.sub(r"^.*?—\s*", "", item) for item in guide]
+            for left in range(len(bodies)):
+                for right in range(left + 1, len(bodies)):
+                    a = re.sub(r"[^0-9A-Za-z가-힣]", "", bodies[left])
+                    b = re.sub(r"[^0-9A-Za-z가-힣]", "", bodies[right])
+                    if a and b and (a in b or b in a or SequenceMatcher(None, a, b).ratio() >= 0.72):
+                        failures.append(f"{q['id']}: treatment steps {left + 1}/{right + 1} are duplicated")
+            if exp.get("showReasoningWithTreatment") is not False:
+                failures.append(f"{q['id']}: treatment reasoning separation marker missing")
             visual = exp.get("diagnosticVisual") or {}
-            if len(visual.get("steps") or []) < 3:
+            if visual and len(visual.get("steps") or []) < 3:
                 failures.append(f"{q['id']}: treatment flowchart<3")
+            guide_norm = {re.sub(r"[^0-9A-Za-z가-힣]", "", item) for item in guide}
+            if any(re.sub(r"[^0-9A-Za-z가-힣]", "", item) in guide_norm for item in visual.get("steps") or []):
+                failures.append(f"{q['id']}: treatment flow duplicates detailed guideline")
 
     regressions = {
         "gendev2-09-2023-q016": (4, r"에스트로겐|복합호르몬|MEC|혈전", r"\bACE\b"),
         "gendev2-01-2025-q052": (0, r"항이뇨호르몬|수분 재흡수", r"목덜미|NT는"),
         "gendev2-08-2022-q048": (4, r"태반|융모막|lambda", r"\bACE\b"),
+        "gendev2-03-2026-q901": (1, r"15주|양수천자|염색체", r"FGR|microarray"),
     }
     by_id = {q["id"]: q for q in payload["questions"]}
     for qid, (index, required, forbidden) in regressions.items():

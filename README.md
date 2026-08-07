@@ -13,6 +13,8 @@
 - 답 제출 뒤 각 선지 바로 아래에 해당 선지 해설 표시
 - 정오와 관계없이 각 문항을 즉시 다시 풀되 누적 시도·오답·모름·메모는 보존
 - 질환 진단 문항의 명시적 진단 기준과 치료 문항의 단계별 가이드라인·자체 제작 흐름도
+- 치료 문항은 증례 판단과 상세 치료 알고리듬을 분리해 같은 문장을 반복하지 않음
+- iPad/Safari 화면 복귀 시 서버 풀이기록을 다시 병합하고 로그인 중 빈 기록을 먼저 표시하지 않음
 - 생성발2 및 기존 임추·국시 문제은행의 비슷한 문제 연결
 - 문제별 실시간 오류토의
 - 2026년 강의에서 보여 준 비출제 예시를 실제 기출과 구분
@@ -33,6 +35,7 @@ python scripts/enhance_reasoning_steps.py
 python scripts/repair_reasoning_meta_language.py
 python scripts/review_lectures_33_41.py
 python scripts/enrich_guideline_sections.py
+python scripts/refine_treatment_explanations.py
 python scripts/audit_explanation_integrity.py
 python scripts/prepare_site.py
 python scripts/validate_site.py
@@ -45,6 +48,7 @@ node scripts/explanation_quality_smoke.cjs
 node scripts/update_persistence_smoke.cjs
 node scripts/retry_current_smoke.cjs
 node scripts/guideline_explanation_smoke.cjs
+node scripts/ipad_resume_sync_smoke.cjs
 ```
 
 ## 자료 및 근거
