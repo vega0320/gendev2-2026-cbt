@@ -57,7 +57,28 @@ async function login(page, attendance) {
     await login(other, "78");
     const otherMeta = await other.locator("#question-card .question-meta").innerText();
     if (!otherMeta.includes("시도 0 · 오답 0")) throw new Error("다른 출석번호 기록 분리 실패");
-    console.log("CROSS_DEVICE_BROWSER_PASS same_attendance=shared different_attendance=isolated progress_tab=pass mobile=pass");
+
+    const tabletContext = await browser.newContext({
+      viewport: {width: 820, height: 1180},
+      userAgent: "Mozilla/5.0 (iPad; CPU OS 18_6 like Mac OS X) AppleWebKit/605.1.15 CriOS/127.0.6533.77 Mobile/15E148 Safari/604.1",
+      hasTouch: true,
+      isMobile: true,
+    });
+    await tabletContext.addInitScript(() => { window.__PROGRESS_POLL_MS = 1000; });
+    const tablet = await tabletContext.newPage();
+    await installProgressMock(tablet);
+    await login(tablet, "94");
+    const phoneContext = await browser.newContext({viewport: {width: 390, height: 844}});
+    const phone = await phoneContext.newPage();
+    await installProgressMock(phone);
+    await login(phone, "94");
+    await phone.locator('[data-choice="3"]').click();
+    await phone.click("#submit-answer");
+    await phone.waitForFunction(() => document.querySelector("#sync-status")?.textContent === "기기 간 동기화됨");
+    // iPad 쪽에 focus/pageshow를 보내지 않아도 열린 Chrome 화면이 주기적으로 서버 기록을 받아야 한다.
+    await tablet.waitForFunction(() => document.querySelector("#question-card .question-meta")?.textContent.includes("시도 1 · 오답 0"), null, {timeout: 6000});
+    if (!(await tablet.locator(".choice.correct").count())) throw new Error("94번 휴대폰→열린 iPad Chrome 자동 갱신 실패");
+    console.log("CROSS_DEVICE_BROWSER_PASS same_attendance=shared different_attendance=isolated progress_tab=pass mobile=pass attendance94_phone_to_open_ipad_chrome=poll_pass");
   } finally {
     await browser.close();
   }

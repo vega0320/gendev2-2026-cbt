@@ -1,4 +1,5 @@
-import { onRequestGet, onRequestPost } from "../functions/api/progress.js";
+import { readFileSync } from "node:fs";
+import { onRequestGet, onRequestPost, validQuestionId } from "../functions/api/progress.js";
 
 let row = null;
 const calls = [];
@@ -55,6 +56,19 @@ const many = await onRequestPost({
 });
 if (many.status !== 200 || Object.keys((await many.json()).responses).length < 600) throw new Error("more than 500 stable IDs were truncated");
 
+const questions = JSON.parse(readFileSync(new URL("../site/data/questions.json", import.meta.url), "utf8")).questions;
+const rejectedIds = questions.map(question => question.id).filter(id => !validQuestionId(id));
+if (rejectedIds.length) throw new Error(`site question IDs rejected by progress API: ${rejectedIds.join(", ")}`);
+row = null;
+const addedKinds = await onRequestPost({
+  request: new Request("https://example.test/api/progress", {method: "POST", headers: {"content-type": "application/json"}, body: JSON.stringify({attendance: "79", responses: {
+    "gendev2-01-2019-note-q005": responseState,
+    "gendev2-05-2026-practice-q001": responseState,
+  }})}),
+  env: {DB, PROGRESS_SALT: "test-progress-salt"},
+});
+if (addedKinds.status !== 200 || Object.keys((await addedKinds.json()).responses).length !== 2) throw new Error("note/practice progress was dropped");
+
 const bad = await onRequestPost({request: new Request("https://example.test/api/progress", {method: "POST", headers: {"content-type": "application/json"}, body: JSON.stringify({attendance: "bad", responses: {}})}), env: {DB}});
 if (bad.status !== 400) throw new Error("invalid attendance accepted");
-console.log("PROGRESS_API_SMOKE_PASS put=pass get=pass privacy=pass stale_merge=pass ids_600=pass validation=pass");
+console.log(`PROGRESS_API_SMOKE_PASS put=pass get=pass privacy=pass stale_merge=pass ids_600=pass site_ids=${questions.length} note_practice=pass validation=pass`);

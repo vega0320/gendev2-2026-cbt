@@ -4,7 +4,7 @@ const json = (body, status = 200) => new Response(JSON.stringify(body), {
 });
 
 const validAttendance = value => /^\d{1,4}$/.test(value || "");
-const validQuestionId = value => /^gendev2-[0-9]{2}(?:-[12])?-[0-9]{4}-q[0-9]{3}(?:-v[0-9]+)?$/.test(value || "");
+export const validQuestionId = value => /^gendev2-[0-9]{2}(?:-[12])?-[0-9]{4}(?:-(?:note|practice))?-q[0-9]{3}(?:-v[0-9]+)?$/.test(value || "");
 const safeInteger = value => Number.isInteger(value) && value >= 0 && value <= 100000 ? value : 0;
 const safeDate = value => typeof value === "string" && !Number.isNaN(Date.parse(value)) ? value : new Date(0).toISOString();
 

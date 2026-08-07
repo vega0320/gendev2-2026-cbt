@@ -3,7 +3,8 @@
   const el = (id) => document.getElementById(id);
   const escapeHtml = (value) => String(value ?? "").replace(/[&<>'"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c]));
   const circled = ["①","②","③","④","⑤"];
-  const state = { data:null, version:null, attendance:null, store:null, lecture:"01", index:0, selected:null, poll:null, updateTimer:null, syncTimer:null, syncRevision:0, syncInFlight:null, syncPending:false, pullInFlight:null, lastProgressPullAt:0, mode:"solve", search:"", sameProfessorOnly:false, reviewQueueIds:null };
+  const progressPollMs = Math.max(1000, Number(window.__PROGRESS_POLL_MS)||15000);
+  const state = { data:null, version:null, attendance:null, store:null, lecture:"01", index:0, selected:null, poll:null, updateTimer:null, progressUpdateTimer:null, syncTimer:null, syncRevision:0, syncInFlight:null, syncPending:false, pullInFlight:null, lastProgressPullAt:0, mode:"solve", search:"", sameProfessorOnly:false, reviewQueueIds:null };
   const storageKey = () => `gendev2:attendance:${state.attendance}:v1`;
   const freshStore = () => ({responses:{}, notes:{}, lectureNotes:{}, updatedAt:new Date().toISOString()});
   function loadStore(){ try { state.store=JSON.parse(localStorage.getItem(storageKey()))||freshStore(); } catch { state.store=freshStore(); } }
@@ -22,8 +23,8 @@
     if(state.attendance===attendance&&(state.syncPending||revision!==state.syncRevision)){state.syncPending=false;return pushProgress();}
   }
   function queueProgressSync(){clearTimeout(state.syncTimer);setSyncStatus("동기화 대기","pending");state.syncTimer=setTimeout(pushProgress,350);}
-  async function pullProgress(){setSyncStatus("기록 불러오는 중","pending");try{const res=await fetch(`/api/progress?attendance=${encodeURIComponent(state.attendance)}&t=${Date.now()}`,{cache:"no-store",headers:{"cache-control":"no-cache"}});if(!res.ok)throw new Error();const remote=await res.json();state.store=mergeStores(state.store,remote);localStorage.setItem(storageKey(),JSON.stringify(state.store));state.lastProgressPullAt=Date.now();await pushProgress();return true;}catch{setSyncStatus("이 기기에 저장됨","offline");return false;}}
-  async function refreshProgressFromServer(force=false){if(!state.attendance||!state.store)return false;if(!force&&Date.now()-state.lastProgressPullAt<3000)return false;if(state.pullInFlight)return state.pullInFlight;const attendance=state.attendance;state.pullInFlight=(async()=>{const loaded=await pullProgress();if(loaded&&state.attendance===attendance){renderLectures();setMode(state.mode);}return loaded;})();try{return await state.pullInFlight;}finally{state.pullInFlight=null;}}
+  async function pullProgress(pushAfterMerge=true){setSyncStatus("기록 불러오는 중","pending");try{const res=await fetch(`/api/progress?attendance=${encodeURIComponent(state.attendance)}&t=${Date.now()}`,{cache:"no-store",headers:{"cache-control":"no-cache"}});if(!res.ok)throw new Error();const remote=await res.json();state.store=mergeStores(state.store,remote);localStorage.setItem(storageKey(),JSON.stringify(state.store));state.lastProgressPullAt=Date.now();if(pushAfterMerge)await pushProgress();else setSyncStatus("기기 간 동기화됨");return true;}catch{setSyncStatus("이 기기에 저장됨","offline");return false;}}
+  async function refreshProgressFromServer(force=false,pushAfterMerge=true){if(!state.attendance||!state.store)return false;if(!force&&Date.now()-state.lastProgressPullAt<3000)return false;if(state.pullInFlight)return state.pullInFlight;const attendance=state.attendance;state.pullInFlight=(async()=>{const currentId=currentQuestion()?.id;const beforeCurrent=JSON.stringify(currentId?state.store.responses?.[currentId]||null:null);const before=JSON.stringify({responses:state.store.responses||{},lectureNotes:state.store.lectureNotes||{}});const loaded=await pullProgress(pushAfterMerge);const after=JSON.stringify({responses:state.store.responses||{},lectureNotes:state.store.lectureNotes||{}});if(loaded&&before!==after&&state.attendance===attendance){renderLectures();const currentChanged=beforeCurrent!==JSON.stringify(currentId?state.store.responses?.[currentId]||null:null);if(state.mode==="solve"&&!currentChanged){updateReviewCount();renderProgress();renderNav();}else setMode(state.mode);}return loaded;})();try{return await state.pullInFlight;}finally{state.pullInFlight=null;}}
   function saveStore(immediate=false){state.store.updatedAt=new Date().toISOString();localStorage.setItem(storageKey(),JSON.stringify(state.store));state.syncRevision++;if(immediate)void pushProgress();else queueProgressSync();}
   function beaconProgress(){if(!state.attendance||!state.store||!navigator.sendBeacon)return;const blob=new Blob([JSON.stringify(progressPayload())],{type:"application/json"});navigator.sendBeacon("/api/progress",blob);}
   function responseFor(id){ return state.store.responses[id] || {attempts:0,wrong:0,selected:null,revealed:false,unknown:false}; }
@@ -71,8 +72,10 @@
     el("review-all-retry").addEventListener("click",startReviewQueue);
     applySidebar(localStorage.getItem("gendev2:sidebar-collapsed:v1")==="1");
     state.updateTimer=setInterval(checkForSiteUpdate,30000);
+    state.progressUpdateTimer=setInterval(()=>{if(document.visibilityState==="visible")void refreshProgressFromServer(false,false);},progressPollMs);
     window.addEventListener("focus",()=>{void checkForSiteUpdate();void refreshProgressFromServer();});
     window.addEventListener("pageshow",event=>{if(event.persisted)void refreshProgressFromServer(true);});
+    window.addEventListener("online",()=>void refreshProgressFromServer(true));
     document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){void checkForSiteUpdate();void refreshProgressFromServer();}else{void pushProgress();beaconProgress();}});
     window.addEventListener("pagehide",beaconProgress);
   }
