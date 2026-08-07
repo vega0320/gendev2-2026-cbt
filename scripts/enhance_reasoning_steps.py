@@ -30,10 +30,12 @@ def main() -> None:
         if len(steps) >= 4 or not answers:
             continue
         facts = [normalize(choices[a - 1]).rstrip(".") for a in answers]
+        # 화면에는 풀이 행동을 지시하는 문장이 아니라 실제 의학적 근거만 남긴다.
+        # "정답 후보를 확인한다"는 말은 학습 정보를 주지 않고 정답을 다시 말할 뿐이다.
         if len(facts) == 1:
-            final = f"마지막으로 정답 후보의 직접 근거를 확인한다. {facts[0]}."
+            final = f"{facts[0]}."
         else:
-            final = "마지막으로 각 정답 후보의 독립 근거를 확인한다. " + " / ".join(facts) + "."
+            final = " / ".join(facts) + "."
         exp["reasoningSteps"] = list(steps) + [final]
         changed += 1
 

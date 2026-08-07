@@ -1,0 +1,5 @@
+/version.json
+  Cache-Control: no-store, max-age=0
+
+/data/questions.json
+  Cache-Control: no-cache, must-revalidate

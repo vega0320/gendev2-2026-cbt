@@ -32,6 +32,29 @@ const get = await onRequestGet({request: new Request("https://example.test/api/p
 const payload = await get.json();
 if (get.status !== 200 || payload.responses["gendev2-04-2025-q080"]?.attempts !== 2 || payload.lectureNotes["14"]?.text !== "HIE 6시간" || payload.lectureNotes.bad) throw new Error("GET progress failed");
 
+const newerState = {...responseState, attempts: 3, wrong: 2, selected: 4, lastAt: "2026-08-04T02:00:00.000Z"};
+await onRequestPost({
+  request: new Request("https://example.test/api/progress", {method: "POST", headers: {"content-type": "application/json"}, body: JSON.stringify({attendance: "77", responses: {"gendev2-04-2025-q080": newerState}})}),
+  env: {DB, PROGRESS_SALT: "test-progress-salt"},
+});
+const staleState = {...responseState, attempts: 1, wrong: 0, selected: 1, lastAt: "2026-08-04T00:00:00.000Z"};
+await onRequestPost({
+  request: new Request("https://example.test/api/progress", {method: "POST", headers: {"content-type": "application/json"}, body: JSON.stringify({attendance: "77", responses: {"gendev2-04-2025-q080": staleState}})}),
+  env: {DB, PROGRESS_SALT: "test-progress-salt"},
+});
+const merged = JSON.parse(row.payload).responses["gendev2-04-2025-q080"];
+if (merged.attempts !== 3 || merged.wrong !== 2 || merged.selected !== 4) throw new Error("stale progress overwrote newer answer");
+
+const manyResponses = Object.fromEntries(Array.from({length: 600}, (_, index) => [
+  `gendev2-04-2025-q080-v${index + 1}`,
+  {...responseState, lastAt: new Date(Date.parse(responseState.lastAt) + index * 1000).toISOString()},
+]));
+const many = await onRequestPost({
+  request: new Request("https://example.test/api/progress", {method: "POST", headers: {"content-type": "application/json"}, body: JSON.stringify({attendance: "78", responses: manyResponses})}),
+  env: {DB, PROGRESS_SALT: "test-progress-salt"},
+});
+if (many.status !== 200 || Object.keys((await many.json()).responses).length < 600) throw new Error("more than 500 stable IDs were truncated");
+
 const bad = await onRequestPost({request: new Request("https://example.test/api/progress", {method: "POST", headers: {"content-type": "application/json"}, body: JSON.stringify({attendance: "bad", responses: {}})}), env: {DB}});
 if (bad.status !== 400) throw new Error("invalid attendance accepted");
-console.log("PROGRESS_API_SMOKE_PASS put=pass get=pass privacy=pass validation=pass");
+console.log("PROGRESS_API_SMOKE_PASS put=pass get=pass privacy=pass stale_merge=pass ids_600=pass validation=pass");

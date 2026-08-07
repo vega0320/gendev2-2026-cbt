@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
@@ -8,6 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "data" / "questions.json"
 OUTPUT = ROOT / "site" / "data" / "questions.json"
+VERSION_OUTPUT = ROOT / "site" / "version.json"
 
 
 PILOT_EXPLANATIONS = {
@@ -212,7 +214,22 @@ def main() -> None:
         payload["buildMode"] = "full"
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_text(json.dumps(payload, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-    print(f"SITE_DATA_READY mode={payload['buildMode']} questions={len(payload['questions'])}")
+    data_hash = hashlib.sha256(OUTPUT.read_bytes()).hexdigest()[:16]
+    app_hasher = hashlib.sha256()
+    for relative in ("site/app.js", "site/styles.css", "site/index.html"):
+        app_hasher.update((ROOT / relative).read_bytes())
+    app_hash = app_hasher.hexdigest()[:16]
+    version = {
+        "schemaVersion": 1,
+        "dataVersion": data_hash,
+        "appVersion": app_hash,
+        "buildVersion": hashlib.sha256(f"{data_hash}:{app_hash}".encode()).hexdigest()[:16],
+    }
+    VERSION_OUTPUT.write_text(json.dumps(version, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    print(
+        f"SITE_DATA_READY mode={payload['buildMode']} questions={len(payload['questions'])} "
+        f"build={version['buildVersion']}"
+    )
 
 
 if __name__ == "__main__":

@@ -28,6 +28,7 @@ python scripts/review_lecture01_reasoning.py
 python scripts/review_lecture09_evidence.py
 python scripts/repair_explanation_integrity.py
 python scripts/enhance_reasoning_steps.py
+python scripts/repair_reasoning_meta_language.py
 python scripts/audit_explanation_integrity.py
 python scripts/prepare_site.py
 python scripts/validate_site.py
@@ -37,6 +38,7 @@ node scripts/discussion_smoke.mjs
 node scripts/browser_smoke.cjs
 node scripts/review_smoke.cjs
 node scripts/explanation_quality_smoke.cjs
+node scripts/update_persistence_smoke.cjs
 ```
 
 ## 자료 및 근거
